@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RATIN.BD Professional Billing System Pro</title>
+  <title>RATIN.BD Billing Pro</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -12,13 +12,36 @@
       --success: #16a34a;
       --danger: #dc2626;
       --warning: #d97706;
-      --bg: #f1f5f9;
+      --bg: #f8fafc;
       --card-bg: #ffffff;
       --text: #1e293b;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+
+    #pageLoader {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #cbd5e1;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
     header {
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -42,13 +65,17 @@
     }
     .status-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #22c55e; }
 
-    .container { flex: 1; padding: 1.5rem; max-width: 1200px; margin: 0 auto; width: 100%; }
+    .container { flex: 1; padding: 1.5rem; max-width: 1240px; margin: 0 auto; width: 100%; }
     .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 1.5rem; border: 1px solid #e2e8f0; }
     
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-    .banner-card { background: #eff6ff; border-left: 5px solid var(--primary); padding: 1.2rem; border-radius: 10px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .banner-card { background: #eff6ff; border-left: 5px solid var(--primary); padding: 1.2rem; border-radius: 10px; transition: transform 0.2s; }
+    .banner-card:hover { transform: translateY(-3px); }
     .banner-card h4 { font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
-    .banner-card div { font-size: 1.6rem; font-weight: bold; color: var(--secondary); margin-top: 5px; }
+    .banner-card div { font-size: 1.4rem; font-weight: bold; color: var(--secondary); margin-top: 5px; }
+
+    .cut-tag { color: var(--danger); font-size: 0.9rem; font-weight: bold; margin-left: 4px; }
+    .excess-tag { color: var(--success); font-size: 0.9rem; font-weight: bold; margin-left: 4px; }
 
     .btn { padding: 0.6rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
     .btn-primary { background-color: var(--primary); color: white; }
@@ -63,6 +90,7 @@
     .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.9rem; color: #334155; }
     .form-group input, .form-group select { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; background: #fff; }
     .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .form-group input[disabled], .form-group select[disabled] { background-color: #e2e8f0; cursor: not-allowed; }
 
     .password-wrapper { position: relative; display: flex; align-items: center; }
     .password-wrapper input { padding-right: 2.5rem; }
@@ -93,7 +121,9 @@
     .auth-brand p { font-size: 0.85rem; color: #64748b; }
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
-    .modal-box { background: white; padding: 1.8rem; border-radius: 12px; max-width: 450px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    .modal-box { background: white; padding: 1.8rem; border-radius: 12px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+
+    .profile-photo-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); margin-top: 5px; display: block; }
 
     @media screen and (max-width: 768px) {
       header { flex-direction: column !important; gap: 10px !important; text-align: center !important; padding: 12px !important; }
@@ -103,15 +133,15 @@
       .grid-3 { grid-template-columns: 1fr !important; }
       .manager-controls { flex-direction: column; }
       .manager-controls button { width: 100%; }
-      .admin-create-grid { grid-template-columns: 1fr !important; }
-      .step-grid { grid-template-columns: 1fr !important; }
-      .line-item-grid { grid-template-columns: 1fr !important; }
     }
   </style>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- jsPDF & autoTable Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -130,13 +160,19 @@
 </head>
 <body>
 
+  <!-- LOADING OVERLAY -->
+  <div id="pageLoader">
+    <div class="spinner"></div>
+    <p style="margin-top: 1rem; font-weight: 600; color: #475569;">Syncing Data...</p>
+  </div>
+
   <header>
     <div>
-      <h1 style="display:inline-block; vertical-align:middle;">RATIN.BD Billing</h1>
-      <span class="cloud-status"><span class="status-dot"></span> 100% Live Online Sync</span>
+      <h1 style="display:inline-block; vertical-align:middle;">RATIN.BD Billing Pro</h1>
+      <span class="cloud-status"><span class="status-dot"></span> 100% Cloud Synced</span>
     </div>
     <div id="navRight" class="hidden" style="display:flex; gap:0.5rem; align-items:center;">
-      <span id="userInfoText" style="margin-right:0.5rem; font-weight:500;"></span>
+      <span id="userInfoText" style="margin-right:0.5rem; font-weight:600; font-size: 0.9rem; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 8px;"></span>
       <button class="btn btn-warning" onclick="openProfileModal()">Profile</button>
       <button class="btn btn-danger" onclick="logout()">Logout</button>
     </div>
@@ -145,18 +181,18 @@
   <div class="container">
 
     <!-- AUTH SECTION -->
-    <div id="authSection" class="card auth-container">
+    <div id="authSection" class="card auth-container hidden">
       <div class="auth-brand">
-        <div style="font-size:2.5rem;">💼</div>
+        <div style="font-size:2.8rem;">💼</div>
         <h2>RATIN.BD Cloud Portal</h2>
-        <p id="authSubtitle">Sign in to sync your billing data live across all devices</p>
+        <p id="authSubtitle">Welcome to login page</p>
       </div>
       
       <!-- LOGIN FORM -->
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label>Username / Email</label>
-          <input type="text" id="loginUser" required placeholder="Enter registered username or email">
+          <label>Username / Email / Phone</label>
+          <input type="text" id="loginUser" required placeholder="Enter username, email or phone">
         </div>
         
         <div class="form-group">
@@ -168,19 +204,19 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-          <a href="#" onclick="openForgotModal()" style="font-size:0.85rem; color:var(--primary); text-decoration:none; font-weight:600;">Forgot Password?</a>
+          <a href="#" onclick="openForgotModal()" style="font-size:0.85rem; color:var(--primary); text-decoration:none; font-weight:600;">Forgot Password? (Phone OTP)</a>
         </div>
 
-        <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width:100%; padding:0.75rem;">Sign In to Portal</button>
+        <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width:100%; padding:0.75rem;">Login</button>
         <p style="text-align:center; margin-top:1.2rem; font-size:0.85rem; color:#64748b;">
-          Don't have an account? <a href="#" onclick="toggleAuth('register')" style="color:var(--primary); font-weight:600; text-decoration:none;">Register New Account</a>
+          Don't have an account? <a href="#" onclick="toggleAuth('register')" style="color:var(--primary); font-weight:600; text-decoration:none;">Create New Account</a>
         </p>
       </form>
 
       <!-- REGISTER FORM -->
-      <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+      <form id="registerForm" class="hidden" onsubmit="handleRegisterStep1(event)">
         <div class="form-group">
-          <label>Username (Single word without space)</label>
+          <label>Username (Single word without spaces)</label>
           <input type="text" id="regUser" required placeholder="e.g. Ratin12">
         </div>
         <div class="form-group">
@@ -188,22 +224,36 @@
           <input type="email" id="regEmail" required placeholder="name@domain.com">
         </div>
         <div class="form-group">
+          <label>Phone Number (Mandatory for OTP)</label>
+          <input type="text" id="regPhone" required placeholder="017XXXXXXXX">
+        </div>
+        <div class="form-group">
           <label>Password</label>
           <div class="password-wrapper">
-            <input type="password" id="regPass" required placeholder="Set strong password">
+            <input type="password" id="regPass" required placeholder="Enter password">
             <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
           </div>
         </div>
         <div class="form-group">
           <label>Account Role</label>
           <select id="regRole">
-            <option value="user">User</option>
+            <option value="user">User (Regular User)</option>
             <option value="manager">Manager</option>
           </select>
         </div>
-        <button type="submit" id="regSubmitBtn" class="btn btn-success" style="width:100%; padding:0.75rem;">Create Online Account</button>
+
+        <div id="regOtpContainer" class="hidden" style="background:#f1f5f9; padding:1rem; border-radius:8px; margin-bottom:1rem; border:1px solid #cbd5e1;">
+          <div class="form-group" style="margin:0;">
+            <label style="color:var(--primary);">Enter 6-Digit OTP Code sent to Phone</label>
+            <input type="text" id="regOtpInput" placeholder="Enter OTP Code">
+          </div>
+        </div>
+
+        <button type="button" id="regOtpSendBtn" class="btn btn-warning" style="width:100%; padding:0.75rem; margin-bottom:0.5rem;" onclick="sendRegOTP()">Send Real-time OTP</button>
+        <button type="submit" id="regSubmitBtn" class="btn btn-success hidden" style="width:100%; padding:0.75rem;">Verify OTP & Register</button>
+        
         <p style="text-align:center; margin-top:1.2rem; font-size:0.85rem; color:#64748b;">
-          Already registered? <a href="#" onclick="toggleAuth('login')" style="color:var(--primary); font-weight:600; text-decoration:none;">Sign In</a>
+          Already registered? <a href="#" onclick="toggleAuth('login')" style="color:var(--primary); font-weight:600; text-decoration:none;">Login</a>
         </p>
       </form>
     </div>
@@ -211,31 +261,93 @@
     <!-- MAIN APP DASHBOARD -->
     <div id="appDashboard" class="hidden">
 
-      <!-- TOP SUMMARY BANNER -->
-      <div id="topBanner" class="grid-3" style="margin-bottom: 1.5rem;">
+      <div id="topBanner" class="grid-3 hidden" style="margin-bottom: 1.5rem;">
         <div class="banner-card">
-          <h4>My Total Approved Cost</h4>
-          <div id="bannerTotalCost">0 BDT</div>
+          <h4>Total Approved Bills (Cost)</h4>
+          <div id="bannerTotalCost">0 BDT <span id="bannerCutAmount" class="cut-tag">(00 BDT)</span></div>
         </div>
         <div class="banner-card" style="border-color: var(--success);">
-          <h4>My Total Received Amount</h4>
-          <div id="bannerReceived">0 BDT</div>
+          <h4>Total Received Money (Received)</h4>
+          <div id="bannerReceived">0 BDT <span id="bannerExcessAmount" class="excess-tag">(00 BDT)</span></div>
         </div>
         <div class="banner-card" style="border-color: var(--warning);">
-          <h4>My Total Due</h4>
+          <h4>Total Outstanding (Due)</h4>
           <div id="bannerDue">0 BDT</div>
+        </div>
+      </div>
+
+      <!-- MANAGER BACKDATE PERMISSION PANEL -->
+      <div id="managerPermCard" class="card hidden" style="border-left: 5px solid var(--warning);">
+        <h3>📅 Backdate / Missing Date Bill Permission Panel</h3>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Search User ID or Phone Number to grant permission for past date bill submission after cutoff time.</p>
+        
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="form-group" style="margin:0; flex:1; min-width:200px;">
+            <label>Search User ID or Phone Number</label>
+            <input type="text" id="permUserSearchInput" placeholder="Enter Username or Phone">
+          </div>
+          <button class="btn btn-secondary" onclick="searchUserForBackdatePerm()" style="height:42px;">Find User</button>
+        </div>
+
+        <div id="permFoundUserCard" class="hidden" style="margin-top:1rem; background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <p style="font-size:0.9rem;"><strong>Selected User:</strong> <span id="foundUserUsername" style="color:var(--primary); font-weight:bold;"></span> (<span id="foundUserPhone"></span>)</p>
+          <div style="display:flex; gap:10px; margin-top:0.8rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; flex:1; min-width:180px;">
+              <label>Select Allowed Backdate</label>
+              <input type="date" id="permTargetDate">
+            </div>
+            <button class="btn btn-primary" onclick="handleGrantPermission()" style="height:42px;">Grant Backdate Permission</button>
+          </div>
+        </div>
+
+        <h4 style="margin-top:1.5rem;">Active Backdate Permissions List:</h4>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Allowed Date</th>
+                <th>Granted By</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="backdatePermTableBody">
+              <tr><td colspan="4" style="text-align:center; color:#64748b;">No active permissions</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
       <!-- ADMIN DASHBOARD -->
       <div id="adminPanel" class="card hidden">
-        <h3>Admin Controls & User Management Desk</h3>
+        <h3>Admin Control & User Management Panel</h3>
+
+        <!-- SYSTEM SETTINGS CONTROL -->
+        <div style="background:#eff6ff; padding:1.2rem; border-radius:10px; margin:1rem 0; border:1px solid #bfdbfe;">
+          <h4 style="margin-bottom:0.8rem; color:var(--primary);">⚙️ System Settings & Rules Configuration</h4>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label>Currency Label</label>
+              <input type="text" id="sysCurrency" value="BDT" placeholder="e.g. BDT">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Cutoff Time (HH:MM)</label>
+              <input type="time" id="sysCutoffTime" value="08:00">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Auto Logout (Minutes)</label>
+              <input type="number" id="sysAutoLogoutMins" value="5" min="1" max="60">
+            </div>
+            <button type="button" class="btn btn-primary" style="height:42px;" onclick="saveSystemSettings()">Save Rules</button>
+          </div>
+        </div>
         
         <div style="background:#f8fafc; padding:1.2rem; border-radius:10px; margin:1rem 0; border:1px solid #e2e8f0;">
-          <h4 style="margin-bottom:0.8rem;">Create New User / Manager ID</h4>
-          <form onsubmit="adminCreateUser(event)" class="admin-create-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:0.5rem; align-items:end;">
+          <h4 style="margin-bottom:0.8rem;">Create New User / Manager</h4>
+          <form onsubmit="adminCreateUser(event)" class="admin-create-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:0.5rem; align-items:end;">
             <div class="form-group" style="margin:0;"><label>Username</label><input type="text" id="admNewUser" required></div>
             <div class="form-group" style="margin:0;"><label>Email</label><input type="email" id="admNewEmail" required></div>
+            <div class="form-group" style="margin:0;"><label>Phone</label><input type="text" id="admNewPhone" required placeholder="017XXXXXXXX"></div>
             <div class="form-group" style="margin:0;"><label>Password</label><input type="text" id="admNewPass" required></div>
             <div class="form-group" style="margin:0;"><label>Role</label>
               <select id="admNewRole">
@@ -243,21 +355,23 @@
                 <option value="manager">Manager</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-success" style="height:42px;">Create ID</button>
+            <button type="submit" class="btn btn-success" style="height:42px;">Create</button>
           </form>
         </div>
 
-        <h4 style="margin-top:1.5rem;">Registered Users Management</h4>
+        <h4 style="margin-top:1.5rem;">Registered Users List</h4>
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
                 <th>Username</th>
                 <th>Email</th>
+                <th>Phone</th>
+                <th>Designation</th>
                 <th>Role</th>
                 <th>Approval</th>
-                <th>Active Status</th>
-                <th>Actions</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="userTableBody"></tbody>
@@ -265,7 +379,7 @@
         </div>
 
         <hr style="margin: 2rem 0; border:0; border-top: 1px solid #e2e8f0;">
-        <h3>Billing Records & Approval Status (Date Search)</h3>
+        <h3>Search Billing Records (By Date)</h3>
         <div style="display:flex; gap:1rem; align-items:end; margin-top:1rem; max-width:400px; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; flex:1;">
             <label>Select Date</label>
@@ -279,15 +393,16 @@
             <thead>
               <tr>
                 <th>Serial & Date</th>
-                <th>Project / Submitted By</th>
-                <th>Bill Items & Cuts</th>
-                <th>Received</th>
-                <th>Final Total</th>
+                <th>Project & User</th>
+                <th>Bill Item & Deductions</th>
+                <th>Received Amount</th>
+                <th>Total Amount</th>
                 <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="adminRecordsTableBody">
-              <tr><td colspan="6" style="text-align:center; color:#64748b;">Select a date and click 'View Records'</td></tr>
+              <tr><td colspan="7" style="text-align:center; color:#64748b;">Select a date and click 'View Records'</td></tr>
             </tbody>
           </table>
         </div>
@@ -295,14 +410,16 @@
 
       <!-- USER & MANAGER BILLING WIZARD -->
       <div id="userBillingPanel" class="card hidden">
-        
-        <!-- STEP 1: Live Date & Project -->
         <div id="billStep1">
-          <h3>Step 1: Date & Project Details</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Step 1: Select Date & Project</h3>
+            <span id="step1RoleNotice" class="status-badge status-approved">Manager Plan Enabled</span>
+          </div>
           <div class="step-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:1rem;">
             <div class="form-group">
-              <label>Live Date (System Real-Time)</label>
-              <input type="date" id="billDate" readonly style="background-color: #e2e8f0; cursor: not-allowed; font-weight:600;">
+              <label id="cutoffNoticeLabel">Select Date (Daily Deadline Applies)</label>
+              <input type="date" id="billDate" style="font-weight:600;">
+              <small id="dateHelpText" style="color:#64748b;">Note: Previous date bills require Manager permission.</small>
             </div>
             <div class="form-group">
               <label>Project Name</label>
@@ -310,37 +427,36 @@
             </div>
           </div>
           <div class="step-footer">
-            <button class="btn btn-primary" onclick="goToStep2()">Next &rarr;</button>
+            <button class="btn btn-primary" onclick="goToStep2()">Next Step &rarr;</button>
           </div>
         </div>
 
-        <!-- STEP 2: Multi-line Items -->
         <div id="billStep2" class="hidden">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <h3>Step 2: Add Line Items & Submit Bill</h3>
-            <button class="btn btn-warning" onclick="goToStep1()" style="font-size:0.8rem;">&larr; Back to Step 1</button>
+            <h3>Step 2: Add Line Items & Submit</h3>
+            <button class="btn btn-warning" id="backToStep1Btn" onclick="goToStep1()" style="font-size:0.8rem;">&larr; Back to Step 1</button>
           </div>
           
           <div style="background:#f8fafc; padding:1.2rem; border-radius:10px; margin:1rem 0; border:1px solid #e2e8f0;">
-            <h4 id="lineItemFormTitle" style="margin-bottom:0.5rem;">Add Line Item</h4>
+            <h4 id="lineItemFormTitle" style="margin-bottom:0.5rem;">Add Item</h4>
             <div class="line-item-grid" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:0.5rem; align-items:end;">
               <div class="form-group" style="margin:0;">
-                <label>Bill Description</label>
-                <input type="text" id="lineDesc" placeholder="Line item details">
+                <label>Description</label>
+                <input type="text" id="lineDesc" placeholder="Enter work description">
               </div>
               <div class="form-group" style="margin:0;">
-                <label>Vehicle Used</label>
-                <input type="text" id="lineVehicle" placeholder="Vehicle no/name">
+                <label>Vehicle / Details</label>
+                <input type="text" id="lineVehicle" placeholder="e.g. Bike/Bus/Van">
               </div>
               <div class="form-group" style="margin:0;">
-                <label>Amount (BDT)</label>
+                <label>Amount (<span class="sys-curr-label">BDT</span>)</label>
                 <input type="number" id="lineAmount" placeholder="Amount">
               </div>
-              <button class="btn btn-success" id="saveLineBtn" onclick="saveLineItem()" style="height:42px;">Save Line</button>
+              <button class="btn btn-success" id="saveLineBtn" onclick="saveLineItem()" style="height:42px;">Add</button>
             </div>
           </div>
 
-          <h4>Line Items Added:</h4>
+          <h4>Added Items List:</h4>
           <div class="table-responsive">
             <table>
               <thead>
@@ -348,8 +464,8 @@
                   <th>#</th>
                   <th>Description</th>
                   <th>Vehicle</th>
-                  <th>Amount (BDT)</th>
-                  <th>Actions</th>
+                  <th>Amount (<span class="sys-curr-label">BDT</span>)</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="lineItemsTable"></tbody>
@@ -358,11 +474,11 @@
 
           <div class="step-grid" style="margin-top:1.5rem; display:grid; grid-template-columns: 1fr 1fr; gap:1rem; align-items:end;">
             <div class="form-group" style="margin:0;">
-              <label><strong>Received Amount for Today (BDT)</strong></label>
+              <label><strong>Advance / Received Money Today (<span class="sys-curr-label">BDT</span>)</strong></label>
               <input type="number" id="receivedAmount" value="0" placeholder="Received amount">
             </div>
             <div>
-              <button class="btn btn-primary" style="width:100%; padding:0.75rem;" onclick="submitCompleteBill()">Submit Final Daily Bill</button>
+              <button class="btn btn-primary" style="width:100%; padding:0.75rem;" onclick="submitCompleteBill()">Submit Final Bill</button>
             </div>
           </div>
         </div>
@@ -371,9 +487,8 @@
 
       <!-- BILL RECORDS TABLE CARD -->
       <div id="billingRecordsCard" class="card">
-        <h3>Billing Records & Approval Status</h3>
+        <h3>Billing Records & Status Monitoring</h3>
         
-        <!-- Manager Control Buttons -->
         <div class="manager-controls hidden" id="managerControls">
             <button class="btn btn-primary" onclick="loadManagerData('ALL_BILLS')">All Bills</button>
             <button class="btn btn-primary" onclick="loadManagerData('MY_BILLS')">My Bills</button>
@@ -381,27 +496,25 @@
             <button class="btn btn-warning" onclick="loadManagerData('PENDING_BILLS')">Pending Bills</button>
         </div>
 
-        <!-- User Date Search & Status View -->
         <div class="user-billing-records" id="userDateSearchBox">
             <div class="search-box">
-                <label for="filterDateInput" style="font-weight:600; font-size:0.9rem;">Select Date:</label>
+                <label for="filterDateInput" style="font-weight:600; font-size:0.9rem;">Date Filter:</label>
                 <input type="date" id="filterDateInput" onchange="filterUserBillsBySelectedDate()" style="padding:0.4rem 0.8rem; border-radius:6px; border:1px solid #cbd5e1; font-size:0.9rem;">
-                <button class="btn btn-secondary" onclick="clearUserDateFilter()" style="font-size:0.8rem; padding:0.4rem 0.8rem;">Clear Date Filter</button>
+                <button class="btn btn-secondary" onclick="clearUserDateFilter()" style="font-size:0.8rem; padding:0.4rem 0.8rem;">Clear Filter</button>
             </div>
         </div>
 
-        <!-- Table to display Bills -->
         <div class="table-responsive">
           <table id="userBillsTable">
             <thead>
               <tr>
                 <th>Bill Serial & Date</th>
                 <th>Project / User</th>
-                <th>Bill Items & Manager Cuts</th>
-                <th>Received</th>
-                <th>Final Total</th>
+                <th>Bill Details & Deductions</th>
+                <th>Received Amount</th>
+                <th>Total Amount</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="userBillsTableBody"></tbody>
@@ -412,30 +525,100 @@
     </div>
   </div>
 
+  <!-- ADMIN USER EDIT MODAL -->
+  <div id="adminUserEditModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3 style="margin-bottom:1rem; color:var(--secondary);">Edit Registered User Data</h3>
+      
+      <div class="form-group">
+        <label>Username (Cannot be changed)</label>
+        <input type="text" id="admEditUsername" readonly style="background:#e2e8f0; cursor:not-allowed;">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="admEditEmail" required>
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" id="admEditPhone" placeholder="017XXXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>Designation</label>
+        <input type="text" id="admEditDesignation" placeholder="e.g. Engineer / Technician">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="admEditPassword" placeholder="Enter password">
+          <button type="button" class="toggle-password" onclick="togglePasswordVisibility('admEditPassword', this)">👁️</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Account Role</label>
+        <select id="admEditRole">
+          <option value="user">User</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="closeAdminUserEditModal()">Cancel</button>
+        <button class="btn btn-success" onclick="saveAdminUserEdit()">Save User Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT BILL MODAL -->
+  <div id="editBillModal" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 650px;">
+      <h3 style="margin-bottom:1rem;">Edit Bill Details</h3>
+      <input type="hidden" id="editModalBillId">
+      
+      <div class="step-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+        <div class="form-group" style="margin:0;">
+          <label>Project Name</label>
+          <input type="text" id="editModalProject">
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>Received Amount (<span class="sys-curr-label">BDT</span>)</label>
+          <input type="number" id="editModalReceived">
+        </div>
+      </div>
+
+      <h4>Line Items</h4>
+      <div id="editModalItemsContainer" style="margin: 1rem 0; max-height:250px; overflow-y:auto;"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="closeEditBillModal()">Cancel</button>
+        <button class="btn btn-success" onclick="saveAdminBillEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FORGOT PASSWORD MODAL -->
   <div id="forgotModal" class="modal-overlay hidden">
     <div class="modal-box">
-      <h3 style="margin-bottom:0.5rem; color:var(--secondary);">Reset Password Pro</h3>
-      <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.2rem;">Enter your registered Gmail to verify identity & reset password.</p>
+      <h3 style="margin-bottom:0.5rem; color:var(--secondary);">Phone OTP Password Recovery</h3>
+      <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.2rem;">Verify using your registered Phone Number.</p>
       
       <div id="otpStep1">
         <div class="form-group">
-          <label>Registered Gmail Address</label>
-          <input type="email" id="forgotEmail" placeholder="yourname@gmail.com" required>
+          <label>Registered Phone Number</label>
+          <input type="text" id="forgotPhone" placeholder="017XXXXXXXX" required>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button class="btn btn-secondary" onclick="closeForgotModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="sendGmailOTP()">Request Reset Code</button>
+          <button class="btn btn-primary" onclick="sendPhoneOTP()">Send Real-time OTP</button>
         </div>
       </div>
 
       <div id="otpStep2" class="hidden">
         <div class="form-group">
-          <label>Enter 6-Digit OTP Code</label>
+          <label>Enter 6-Digit Real-time OTP Code</label>
           <input type="text" id="inputOTP" placeholder="e.g. 849201" required>
         </div>
         <div class="form-group">
-          <label>New Password</label>
+          <label>Enter New Password</label>
           <div class="password-wrapper">
             <input type="password" id="forgotNewPass" placeholder="Enter new password" required>
             <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forgotNewPass', this)">👁️</button>
@@ -443,7 +626,7 @@
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button class="btn btn-secondary" onclick="closeForgotModal()">Cancel</button>
-          <button class="btn btn-success" onclick="verifyAndResetPassword()">Confirm & Save Password</button>
+          <button class="btn btn-success" onclick="verifyAndResetPassword()">Save New Password</button>
         </div>
       </div>
     </div>
@@ -452,7 +635,11 @@
   <!-- PROFILE MODAL -->
   <div id="profileModal" class="modal-overlay hidden">
     <div class="modal-box">
-      <h3 style="margin-bottom:1rem;">Update Profile</h3>
+      <h3 style="margin-bottom:1rem;">Profile Update</h3>
+      <div style="text-align:center; margin-bottom:1rem;">
+        <img id="profPhotoPreview" src="https://via.placeholder.com/80" class="profile-photo-preview" style="margin: 0 auto 10px auto;">
+        <input type="file" id="profPhotoInput" accept="image/*" onchange="previewProfileImage(event)" style="font-size:0.8rem;">
+      </div>
       <div class="form-group">
         <label>Username</label>
         <input type="text" id="profUsername" readonly style="background:#e2e8f0; cursor:not-allowed;">
@@ -462,31 +649,87 @@
         <input type="email" id="profEmail">
       </div>
       <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" id="profPhone" placeholder="Enter phone number">
+      </div>
+      <div class="form-group">
+        <label>Designation (Admin Only Edit)</label>
+        <input type="text" id="profDesignation" placeholder="e.g. Software Engineer / Manager">
+      </div>
+      <div class="form-group">
         <label>New Password</label>
         <div class="password-wrapper">
-          <input type="password" id="profPassword" placeholder="Enter new password">
+          <input type="password" id="profPassword" placeholder="Enter password">
           <button type="button" class="toggle-password" onclick="togglePasswordVisibility('profPassword', this)">👁️</button>
         </div>
       </div>
       <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
         <button class="btn btn-secondary" onclick="closeProfileModal()">Cancel</button>
-        <button class="btn btn-success" onclick="saveProfile()">Save Profile Changes</button>
+        <button class="btn btn-success" onclick="saveProfile()">Save Changes</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Global State Synced Live via Firebase
     let globalUsers = {};
     let globalBills = {};
+    let globalPermissions = {};
+    let globalSettings = { currency: 'BDT', cutoffTime: '08:00', autoLogoutMins: 5 };
+    let isDataLoaded = false;
 
     let currentManagerFilter = 'ALL_BILLS';
     let selectedUserDateFilter = null;
     let tempLineItems = [];
     let editingLineId = null;
     let editingBillId = null;
-    let generatedOTP = null;
-    let otpTargetEmail = null;
+
+    let generatedRegOTP = null;
+    let generatedForgotOTP = null;
+    let otpTargetPhone = null;
+    let uploadedPhotoBase64 = null;
+    let selectedBackdateUser = null;
+
+    let autoLogoutTimer = null;
+
+    function getAutoLogoutDuration() {
+      const mins = parseInt(globalSettings.autoLogoutMins, 10) || 5;
+      return mins * 60 * 1000;
+    }
+
+    function startAutoLogoutTimer() {
+      stopAutoLogoutTimer();
+      const session = localStorage.getItem('ratin_session');
+      if (session) {
+        autoLogoutTimer = setTimeout(() => {
+          alert(`System inactivity limit (${globalSettings.autoLogoutMins} minutes) reached. Automatically logged out.`);
+          logout();
+        }, getAutoLogoutDuration());
+      }
+    }
+
+    function stopAutoLogoutTimer() {
+      if (autoLogoutTimer) {
+        clearTimeout(autoLogoutTimer);
+        autoLogoutTimer = null;
+      }
+    }
+
+    function resetAutoLogoutTimer() {
+      const session = localStorage.getItem('ratin_session');
+      if (session) {
+        startAutoLogoutTimer();
+      }
+    }
+
+    ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+      window.addEventListener(evt, resetAutoLogoutTimer, { passive: true });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        resetAutoLogoutTimer();
+      }
+    });
 
     function getUsersArray() {
       if (!globalUsers) return [];
@@ -503,11 +746,26 @@
       return `${formattedName}-BILL-${serialNumber}`;
     }
 
+    function hidePageLoader() {
+      const loader = document.getElementById('pageLoader');
+      if (loader) {
+        loader.style.display = 'none';
+      }
+    }
+
     function initApp() {
       setLiveDate();
       document.getElementById('adminFilterDate').valueAsDate = new Date();
 
-      // Live 100% Sync for Users Table
+      database.ref('settings').on('value', (snapshot) => {
+        if (snapshot.exists()) {
+          globalSettings = snapshot.val();
+        } else {
+          database.ref('settings').set(globalSettings);
+        }
+        applySystemSettings();
+      });
+
       database.ref('users').on('value', (snapshot) => {
         globalUsers = snapshot.val() || {};
 
@@ -515,8 +773,10 @@
           const defaultAdmin = {
             username: "admin",
             email: "ratihossainemon@gmail.com",
+            phone: "01700000000",
             password: "ratin8900",
             role: "admin",
+            designation: "System Administrator",
             status: "Approved",
             activeState: "Active"
           };
@@ -525,9 +785,11 @@
 
         renderAdminUsers();
         checkSession();
+        
+        isDataLoaded = true;
+        hidePageLoader();
       });
 
-      // Live 100% Sync for Bills Table Across All Devices
       database.ref('bills').on('value', (snapshot) => {
         globalBills = snapshot.val() || {};
         renderDashboard();
@@ -535,12 +797,75 @@
           searchAdminDateBills();
         }
       });
+
+      database.ref('backdate_permissions').on('value', (snapshot) => {
+        globalPermissions = snapshot.val() || {};
+        renderBackdatePermissions();
+      });
+    }
+
+    function saveSystemSettings() {
+      const curr = document.getElementById('sysCurrency').value.trim() || 'BDT';
+      const cutoff = document.getElementById('sysCutoffTime').value || '08:00';
+      const logoutMins = parseInt(document.getElementById('sysAutoLogoutMins').value, 10) || 5;
+
+      const newSettings = {
+        currency: curr,
+        cutoffTime: cutoff,
+        autoLogoutMins: logoutMins
+      };
+
+      database.ref('settings').set(newSettings).then(() => {
+        alert('System settings and billing rules updated successfully!');
+      });
+    }
+
+    function applySystemSettings() {
+      document.getElementById('sysCurrency').value = globalSettings.currency || 'BDT';
+      document.getElementById('sysCutoffTime').value = globalSettings.cutoffTime || '08:00';
+      document.getElementById('sysAutoLogoutMins').value = globalSettings.autoLogoutMins || 5;
+
+      document.querySelectorAll('.sys-curr-label').forEach(el => {
+        el.innerText = globalSettings.currency || 'BDT';
+      });
+
+      const noticeLabel = document.getElementById('cutoffNoticeLabel');
+      if (noticeLabel) {
+        noticeLabel.innerText = `Select Date (Daily Cutoff Time: ${globalSettings.cutoffTime || '08:00'})`;
+      }
+
+      renderDashboard();
+    }
+
+    function getStandardTargetDate() {
+      const now = new Date();
+      const [cutoffHours, cutoffMins] = (globalSettings.cutoffTime || '08:00').split(':').map(Number);
+      
+      const cutoff = new Date(now);
+      cutoff.setHours(cutoffHours, cutoffMins, 0, 0);
+
+      if (now < cutoff) {
+        now.setDate(now.getDate() - 1);
+      }
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
     function setLiveDate() {
-      const today = new Date().toISOString().split('T')[0];
+      const targetDate = getStandardTargetDate();
       const billDateInput = document.getElementById('billDate');
-      if (billDateInput) billDateInput.value = today;
+      if (billDateInput && !billDateInput.value) {
+        billDateInput.value = targetDate;
+      }
+    }
+
+    function formatDateToString(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
     function togglePasswordVisibility(inputId, btn) {
@@ -557,7 +882,7 @@
     function openForgotModal() {
       document.getElementById('otpStep1').classList.remove('hidden');
       document.getElementById('otpStep2').classList.add('hidden');
-      document.getElementById('forgotEmail').value = '';
+      document.getElementById('forgotPhone').value = '';
       document.getElementById('forgotModal').classList.remove('hidden');
     }
 
@@ -565,20 +890,20 @@
       document.getElementById('forgotModal').classList.add('hidden');
     }
 
-    function sendGmailOTP() {
-      const email = document.getElementById('forgotEmail').value.trim();
+    function sendPhoneOTP() {
+      const phone = document.getElementById('forgotPhone').value.trim();
       const users = getUsersArray();
-      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      const user = users.find(u => u.phone && u.phone.trim() === phone);
 
       if (!user) {
-        alert('No registered account found with this Gmail address!');
+        alert('No account registered with this phone number!');
         return;
       }
 
-      generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      otpTargetEmail = email;
+      generatedForgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      otpTargetPhone = phone;
 
-      alert(`[RATIN.BD Security Code]\n\nYour OTP Verification Code: ${generatedOTP}\n\nEnter this code in the box to reset your password.`);
+      alert(`[RATIN.BD OTP Gateway]\n\nYour Real-time OTP Code: ${generatedForgotOTP}\n\nUse this code to verify your phone number and reset password.`);
 
       document.getElementById('otpStep1').classList.add('hidden');
       document.getElementById('otpStep2').classList.remove('hidden');
@@ -588,38 +913,59 @@
       const inputCode = document.getElementById('inputOTP').value.trim();
       const newPass = document.getElementById('forgotNewPass').value;
 
-      if (inputCode !== generatedOTP) {
-        alert('Invalid OTP Code!');
+      if (inputCode !== generatedForgotOTP) {
+        alert('Invalid OTP code provided!');
         return;
       }
 
       if (!newPass || newPass.length < 4) {
-        alert('Please enter a valid new password (at least 4 characters)!');
+        alert('Please select a password with at least 4 characters!');
         return;
       }
 
       const users = getUsersArray();
-      const user = users.find(u => u.email.toLowerCase() === otpTargetEmail.toLowerCase());
+      const user = users.find(u => u.phone && u.phone.trim() === otpTargetPhone);
 
       if (user) {
         user.password = newPass;
         database.ref('users/' + user.username).set(user).then(() => {
-          alert('Password reset successful! You can now Sign In with your new password.');
+          alert('Password successfully updated! Log in with your new password.');
           closeForgotModal();
           toggleAuth('login');
         });
       }
     }
 
+    function sendRegOTP() {
+      const phone = document.getElementById('regPhone').value.trim();
+      if (!phone || phone.length < 10) {
+        alert('Please enter a valid Phone Number for OTP verification!');
+        return;
+      }
+
+      const users = getUsersArray();
+      if (users.some(u => u.phone && u.phone.trim() === phone)) {
+        alert('This phone number is already registered!');
+        return;
+      }
+
+      generatedRegOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      alert(`[RATIN.BD Real-time Registration OTP]\n\nYour OTP Code is: ${generatedRegOTP}`);
+
+      document.getElementById('regOtpContainer').classList.remove('hidden');
+      document.getElementById('regOtpSendBtn').classList.add('hidden');
+      document.getElementById('regSubmitBtn').classList.remove('hidden');
+    }
+
     function toggleAuth(mode) {
       if (mode === 'register') {
         document.getElementById('loginForm').classList.add('hidden');
         document.getElementById('registerForm').classList.remove('hidden');
-        document.getElementById('authSubtitle').innerText = 'Register an ID to access online portal';
+        document.getElementById('authSubtitle').innerText = 'Enter your information to access the online portal';
       } else {
         document.getElementById('registerForm').classList.add('hidden');
         document.getElementById('loginForm').classList.remove('hidden');
-        document.getElementById('authSubtitle').innerText = 'Sign in to sync your billing data live across all devices';
+        document.getElementById('authSubtitle').innerText = 'Sign in to get live billing data updates across all devices';
       }
     }
 
@@ -629,20 +975,20 @@
       const pass = document.getElementById('loginPass').value;
       const users = getUsersArray();
 
-      const user = users.find(u => (u.username.toLowerCase() === input || u.email.toLowerCase() === input) && u.password === pass);
+      const user = users.find(u => (u.username.toLowerCase() === input || u.email.toLowerCase() === input || (u.phone && u.phone.trim() === input)) && u.password === pass);
 
       if (!user) {
-        alert('Invalid username/email or password!');
+        alert('Invalid username, email, phone number or password!');
         return;
       }
 
       if (user.status === 'Pending') {
-        alert('Account Pending! Please wait for Admin Approval.');
+        alert('Your account is currently pending! Please wait for admin approval.');
         return;
       }
 
       if (user.activeState === 'Inactive') {
-        alert('Account Deactivated! Contact Admin.');
+        alert('Your account has been deactivated! Please contact the administrator.');
         return;
       }
 
@@ -650,30 +996,46 @@
       checkSession();
     }
 
-    function handleRegister(e) {
+    function handleRegisterStep1(e) {
       e.preventDefault();
       const username = document.getElementById('regUser').value.trim().replace(/\s+/g, '');
       const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
       const password = document.getElementById('regPass').value;
       const role = document.getElementById('regRole').value;
+      const inputOtp = document.getElementById('regOtpInput').value.trim();
 
-      if (!username || !email || !password) {
+      if (!username || !email || !phone || !password) {
         alert('All fields are required!');
         return;
       }
 
-      const users = getUsersArray();
-      if (users.some(u => u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === email.toLowerCase())) {
-        alert('Username or Email already exists on Cloud!');
+      if (inputOtp !== generatedRegOTP) {
+        alert('Invalid OTP code! Please enter the correct OTP code sent to your phone.');
         return;
       }
 
-      const newUser = { username, email, password, role, status: 'Pending', activeState: 'Active' };
+      const users = getUsersArray();
+      if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+        alert('An account already exists with this username!');
+        return;
+      }
+
+      const newUser = { 
+        username, 
+        email, 
+        phone,
+        password, 
+        role, 
+        designation: role === 'manager' ? 'Manager' : 'User',
+        photo: '',
+        status: 'Pending', 
+        activeState: 'Active' 
+      };
+
       database.ref('users/' + username).set(newUser).then(() => {
-        alert('Registration submitted successfully!\nPlease wait for Admin approval.');
+        alert('Registration successfully verified via OTP!\nYou can log in after admin approval.');
         toggleAuth('login');
-      }).catch(err => {
-        alert('Registration error! Make sure you are connected to internet.');
       });
     }
 
@@ -691,21 +1053,48 @@
         document.getElementById('navRight').classList.remove('hidden');
         document.getElementById('userInfoText').innerText = `${session.username} (${session.role.toUpperCase()})`;
 
+        const step1Date = document.getElementById('billDate');
+        const step1Notice = document.getElementById('step1RoleNotice');
+        const backStep1Btn = document.getElementById('backToStep1Btn');
+
+        // Back button stays available for ALL users
+        if (backStep1Btn) backStep1Btn.classList.remove('hidden');
+
+        if (session.role === 'manager' || session.role === 'admin') {
+          step1Date.removeAttribute('disabled');
+          step1Notice.innerText = "Manager Plan Enabled";
+          step1Notice.className = "status-badge status-approved";
+        } else {
+          step1Date.setAttribute('disabled', 'disabled');
+          step1Notice.innerText = "User Plan (Auto Locked Date)";
+          step1Notice.className = "status-badge status-pending";
+        }
+
         if (session.role === 'admin') {
           document.getElementById('topBanner').classList.add('hidden');
           document.getElementById('adminPanel').classList.remove('hidden');
           document.getElementById('userBillingPanel').classList.add('hidden');
           document.getElementById('billingRecordsCard').classList.add('hidden');
+          document.getElementById('managerPermCard').classList.add('hidden');
           renderAdminUsers();
+        } else if (session.role === 'manager') {
+          document.getElementById('topBanner').classList.remove('hidden');
+          document.getElementById('adminPanel').classList.add('hidden');
+          document.getElementById('userBillingPanel').classList.remove('hidden');
+          document.getElementById('billingRecordsCard').classList.remove('hidden');
+          document.getElementById('managerPermCard').classList.remove('hidden');
         } else {
           document.getElementById('topBanner').classList.remove('hidden');
           document.getElementById('adminPanel').classList.add('hidden');
           document.getElementById('userBillingPanel').classList.remove('hidden');
           document.getElementById('billingRecordsCard').classList.remove('hidden');
+          document.getElementById('managerPermCard').classList.add('hidden');
         }
 
         renderDashboard();
+        startAutoLogoutTimer();
       } else {
+        stopAutoLogoutTimer();
         document.getElementById('authSection').classList.remove('hidden');
         document.getElementById('appDashboard').classList.add('hidden');
         document.getElementById('navRight').classList.add('hidden');
@@ -713,15 +1102,48 @@
     }
 
     function logout() {
+      stopAutoLogoutTimer();
       localStorage.removeItem('ratin_session');
       checkSession();
+    }
+
+    function previewProfileImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadedPhotoBase64 = e.target.result;
+          document.getElementById('profPhotoPreview').src = uploadedPhotoBase64;
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     function openProfileModal() {
       const session = JSON.parse(localStorage.getItem('ratin_session'));
       document.getElementById('profUsername').value = session.username;
-      document.getElementById('profEmail').value = session.email;
-      document.getElementById('profPassword').value = session.password;
+      document.getElementById('profEmail').value = session.email || '';
+      document.getElementById('profPhone').value = session.phone || '';
+      document.getElementById('profDesignation').value = session.designation || '';
+      document.getElementById('profPassword').value = session.password || '';
+
+      if (session.photo) {
+        document.getElementById('profPhotoPreview').src = session.photo;
+        uploadedPhotoBase64 = session.photo;
+      } else {
+        document.getElementById('profPhotoPreview').src = "https://via.placeholder.com/80";
+        uploadedPhotoBase64 = null;
+      }
+
+      const desigInput = document.getElementById('profDesignation');
+      if (session.role === 'admin') {
+        desigInput.removeAttribute('disabled');
+        desigInput.removeAttribute('readonly');
+      } else {
+        desigInput.setAttribute('disabled', 'disabled');
+        desigInput.setAttribute('readonly', 'readonly');
+      }
+
       document.getElementById('profileModal').classList.remove('hidden');
     }
 
@@ -733,47 +1155,154 @@
       const session = JSON.parse(localStorage.getItem('ratin_session'));
       const username = session.username;
       const newEmail = document.getElementById('profEmail').value.trim();
+      const newPhone = document.getElementById('profPhone').value.trim();
       const newPass = document.getElementById('profPassword').value;
+      const newDesignation = document.getElementById('profDesignation').value.trim();
 
       if (!newEmail || !newPass) {
-        alert('All fields are required!');
+        alert('Email and Password are required!');
         return;
       }
 
       const updatedUser = {
         ...session,
         email: newEmail,
-        password: newPass
+        phone: newPhone,
+        password: newPass,
+        photo: uploadedPhotoBase64 || session.photo || ''
       };
+
+      if (session.role === 'admin') {
+        updatedUser.designation = newDesignation;
+      }
 
       database.ref('users/' + username).set(updatedUser).then(() => {
         localStorage.setItem('ratin_session', JSON.stringify(updatedUser));
-        alert('Profile updated successfully!');
+        alert('Profile details updated successfully!');
         closeProfileModal();
         checkSession();
       });
     }
 
-    // ADMIN FUNCTIONS
+    function searchUserForBackdatePerm() {
+      const query = document.getElementById('permUserSearchInput').value.trim().toLowerCase();
+      if (!query) {
+        alert('Please enter a User ID or Phone Number to search!');
+        return;
+      }
+
+      const users = getUsersArray();
+      const user = users.find(u => u.username.toLowerCase() === query || (u.phone && u.phone.trim() === query));
+
+      if (!user) {
+        alert('No user found matching this ID or Phone Number!');
+        document.getElementById('permFoundUserCard').classList.add('hidden');
+        selectedBackdateUser = null;
+        return;
+      }
+
+      if (user.role !== 'user') {
+        alert('Selected user is a Manager or Admin. Permissions apply to regular Users only.');
+        document.getElementById('permFoundUserCard').classList.add('hidden');
+        selectedBackdateUser = null;
+        return;
+      }
+
+      selectedBackdateUser = user.username;
+      document.getElementById('foundUserUsername').innerText = user.username;
+      document.getElementById('foundUserPhone').innerText = user.phone || 'No Phone';
+      document.getElementById('permFoundUserCard').classList.remove('hidden');
+    }
+
+    function handleGrantPermission() {
+      const session = JSON.parse(localStorage.getItem('ratin_session'));
+      const allowedDate = document.getElementById('permTargetDate').value;
+
+      if (!selectedBackdateUser || !allowedDate) {
+        alert('Please select a valid user and date!');
+        return;
+      }
+
+      const permId = `${selectedBackdateUser}_${allowedDate}`;
+      const permissionData = {
+        permId: permId,
+        userId: selectedBackdateUser,
+        allowedDate: allowedDate,
+        grantedBy: session.username,
+        createdAt: Date.now()
+      };
+
+      database.ref('backdate_permissions/' + permId).set(permissionData).then(() => {
+        alert(`Granted permission to User ID: '${selectedBackdateUser}' for billing on ${allowedDate}.`);
+        document.getElementById('permTargetDate').value = '';
+        document.getElementById('permUserSearchInput').value = '';
+        document.getElementById('permFoundUserCard').classList.add('hidden');
+        selectedBackdateUser = null;
+      });
+    }
+
+    function revokePermission(permId) {
+      if (confirm('Are you sure you want to revoke this permission?')) {
+        database.ref('backdate_permissions/' + permId).remove();
+      }
+    }
+
+    function renderBackdatePermissions() {
+      const tbody = document.getElementById('backdatePermTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const perms = Object.values(globalPermissions || {});
+      if (perms.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">No active permissions</td></tr>`;
+        return;
+      }
+
+      perms.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${p.userId}</strong></td>
+          <td>${p.allowedDate}</td>
+          <td>${p.grantedBy}</td>
+          <td>
+            <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="revokePermission('${p.permId}')">Revoke</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     function adminCreateUser(e) {
       e.preventDefault();
       const username = document.getElementById('admNewUser').value.trim().replace(/\s+/g, '');
       const email = document.getElementById('admNewEmail').value.trim();
+      const phone = document.getElementById('admNewPhone').value.trim();
       const password = document.getElementById('admNewPass').value;
       const role = document.getElementById('admNewRole').value;
 
       const users = getUsersArray();
-      if (users.some(u => u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === email.toLowerCase())) {
-        alert('Username or Email already exists!');
+      if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+        alert('This username is already in use!');
         return;
       }
 
-      const newUser = { username, email, password, role, status: 'Approved', activeState: 'Active' };
+      const newUser = { 
+        username, 
+        email, 
+        phone,
+        password, 
+        role, 
+        designation: role === 'manager' ? 'Manager' : 'User',
+        status: 'Approved', 
+        activeState: 'Active' 
+      };
+
       database.ref('users/' + username).set(newUser).then(() => {
         document.getElementById('admNewUser').value = '';
         document.getElementById('admNewEmail').value = '';
+        document.getElementById('admNewPhone').value = '';
         document.getElementById('admNewPass').value = '';
-        alert('User ID created and synced live!');
+        alert('New user created successfully!');
       });
     }
 
@@ -789,16 +1318,68 @@
         tr.innerHTML = `
           <td><strong>${u.username}</strong></td>
           <td>${u.email}</td>
+          <td>${u.phone || 'N/A'}</td>
+          <td>${u.designation || 'N/A'}</td>
           <td>${u.role}</td>
           <td><span class="status-badge ${u.status === 'Approved' ? 'status-approved' : 'status-pending'}">${u.status}</span></td>
           <td><span class="status-badge ${u.activeState === 'Active' ? 'status-approved' : 'status-inactive'}">${u.activeState || 'Active'}</span></td>
           <td>
-            ${u.status === 'Pending' ? `<button class="btn btn-success" style="padding:0.2rem 0.4rem;" onclick="approveUser('${u.username}')">Approve</button> ` : ''}
-            <button class="btn btn-warning" style="padding:0.2rem 0.4rem;" onclick="toggleActiveStatus('${u.username}', '${u.activeState || 'Active'}')">${u.activeState === 'Inactive' ? 'Activate' : 'Deactivate'}</button>
-            <button class="btn btn-danger" style="padding:0.2rem 0.4rem;" onclick="deleteUserByAdmin('${u.username}')">Delete ID</button>
+            ${u.status === 'Pending' ? `<button class="btn btn-success" style="padding:0.2rem 0.4rem; margin-right:2px;" onclick="approveUser('${u.username}')">Approve</button>` : ''}
+            <button class="btn btn-primary" style="padding:0.2rem 0.4rem; margin-right:2px;" onclick="openAdminUserEditModal('${u.username}')">Edit</button>
+            <button class="btn btn-warning" style="padding:0.2rem 0.4rem; margin-right:2px;" onclick="toggleActiveStatus('${u.username}', '${u.activeState || 'Active'}')">${u.activeState === 'Inactive' ? 'Activate' : 'Deactivate'}</button>
+            <button class="btn btn-danger" style="padding:0.2rem 0.4rem;" onclick="deleteUserByAdmin('${u.username}')">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
+      });
+    }
+
+    function openAdminUserEditModal(username) {
+      const users = getUsersArray();
+      const user = users.find(u => u.username === username);
+      if (!user) return;
+
+      document.getElementById('admEditUsername').value = user.username;
+      document.getElementById('admEditEmail').value = user.email || '';
+      document.getElementById('admEditPhone').value = user.phone || '';
+      document.getElementById('admEditDesignation').value = user.designation || '';
+      document.getElementById('admEditPassword').value = user.password || '';
+      document.getElementById('admEditRole').value = user.role || 'user';
+
+      document.getElementById('adminUserEditModal').classList.remove('hidden');
+    }
+
+    function closeAdminUserEditModal() {
+      document.getElementById('adminUserEditModal').classList.add('hidden');
+    }
+
+    function saveAdminUserEdit() {
+      const username = document.getElementById('admEditUsername').value;
+      const users = getUsersArray();
+      const user = users.find(u => u.username === username);
+
+      if (!user) return;
+
+      const email = document.getElementById('admEditEmail').value.trim();
+      const phone = document.getElementById('admEditPhone').value.trim();
+      const designation = document.getElementById('admEditDesignation').value.trim();
+      const password = document.getElementById('admEditPassword').value;
+      const role = document.getElementById('admEditRole').value;
+
+      if (!email || !password) {
+        alert('Email and Password are required!');
+        return;
+      }
+
+      user.email = email;
+      user.phone = phone;
+      user.designation = designation;
+      user.password = password;
+      user.role = role;
+
+      database.ref('users/' + username).set(user).then(() => {
+        alert(`User data for '${username}' updated successfully!`);
+        closeAdminUserEditModal();
       });
     }
 
@@ -812,7 +1393,7 @@
     }
 
     function deleteUserByAdmin(username) {
-      if (confirm(`Delete user '${username}' permanently from Cloud?`)) {
+      if (confirm(`Are you sure you want to permanently delete user '${username}'?`)) {
         database.ref('users/' + username).remove();
         const bills = getBillsArray();
         bills.forEach(b => {
@@ -831,15 +1412,17 @@
       const tbody = document.getElementById('adminRecordsTableBody');
       tbody.innerHTML = '';
 
+      const currency = globalSettings.currency || 'BDT';
+
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:1rem;">No bills found for date: ${selectedDate}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:1rem;">No billing data for the specified date: ${selectedDate}</td></tr>`;
         return;
       }
 
       filtered.forEach(bill => {
         let itemsHtml = '<ul style="list-style:none; padding:0;">';
         (bill.items || []).forEach((item, index) => {
-          itemsHtml += `<li style="font-size:0.85rem; margin-bottom:4px;">• ${index + 1}. ${item.desc} (${item.vehicle}): ${item.originalAmount} BDT ${item.cutAmount > 0 ? `<span style="color:var(--danger);">(Cut: -${item.cutAmount})</span>` : ''}</li>`;
+          itemsHtml += `<li style="font-size:0.85rem; margin-bottom:4px;">• ${index + 1}. ${item.desc} (${item.vehicle}): ${item.originalAmount} ${currency} ${item.cutAmount > 0 ? `<span style="color:var(--danger);">(Cut: -${item.cutAmount})</span>` : ''}</li>`;
         });
         itemsHtml += '</ul>';
 
@@ -848,37 +1431,136 @@
           <td><span class="serial-tag">${bill.serialNo || 'N/A'}</span><br>${bill.date}</td>
           <td><strong>${bill.projectName || 'General'}</strong><br><small>By: ${bill.user || bill.userId}</small></td>
           <td>${itemsHtml}</td>
-          <td>${bill.receivedAmount || 0} BDT</td>
-          <td><strong>${bill.finalTotal} BDT</strong></td>
-          <td><span class="status-badge ${bill.status === 'Approved' ? 'status-approved' : 'status-pending'}">${bill.status}</span></td>
+          <td>${bill.receivedAmount || 0} ${currency}</td>
+          <td><strong>${bill.finalTotal} ${currency}</strong></td>
+          <td><span class="status-badge ${bill.status === 'Approved' ? 'status-approved' : bill.status === 'Rejected' ? 'status-rejected' : 'status-pending'}">${bill.status}</span></td>
+          <td>
+            <button class="btn btn-warning" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="openEditBillModal('${bill.id}')">Edit</button>
+            <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteBillByAdmin('${bill.id}')">Delete</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // WIZARD & LINE ITEMS
+    function deleteBillByAdmin(billId) {
+      if (confirm('Are you sure you want to permanently delete this bill?')) {
+        database.ref('bills/' + billId).remove().then(() => {
+          alert('Bill deleted successfully.');
+        });
+      }
+    }
+
+    function openEditBillModal(billId) {
+      const bills = getBillsArray();
+      const bill = bills.find(b => b.id == billId);
+      if (!bill) return;
+
+      document.getElementById('editModalBillId').value = bill.id;
+      document.getElementById('editModalProject').value = bill.projectName || '';
+      document.getElementById('editModalReceived').value = bill.receivedAmount || 0;
+
+      const container = document.getElementById('editModalItemsContainer');
+      container.innerHTML = '';
+
+      (bill.items || []).forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'background:#f8fafc; padding:0.8rem; border-radius:8px; margin-bottom:0.5rem; border:1px solid #e2e8f0; display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:0.5rem; align-items:center;';
+        div.innerHTML = `
+          <div><label style="font-size:0.75rem; font-weight:600;">Desc</label><input type="text" id="edit_desc_${idx}" value="${item.desc}" style="padding:4px; font-size:0.85rem; width:100%;"></div>
+          <div><label style="font-size:0.75rem; font-weight:600;">Vehicle</label><input type="text" id="edit_veh_${idx}" value="${item.vehicle}" style="padding:4px; font-size:0.85rem; width:100%;"></div>
+          <div><label style="font-size:0.75rem; font-weight:600;">Original</label><input type="number" id="edit_orig_${idx}" value="${item.originalAmount}" style="padding:4px; font-size:0.85rem; width:100%;"></div>
+          <div><label style="font-size:0.75rem; font-weight:600;">Cut</label><input type="number" id="edit_cut_${idx}" value="${item.cutAmount || 0}" style="padding:4px; font-size:0.85rem; width:100%;"></div>
+        `;
+        container.appendChild(div);
+      });
+
+      document.getElementById('editBillModal').classList.remove('hidden');
+    }
+
+    function closeEditBillModal() {
+      document.getElementById('editBillModal').classList.add('hidden');
+    }
+
+    function saveAdminBillEdit() {
+      const billId = document.getElementById('editModalBillId').value;
+      const bills = getBillsArray();
+      const bill = bills.find(b => b.id == billId);
+
+      if (!bill) return;
+
+      bill.projectName = document.getElementById('editModalProject').value.trim();
+      bill.receivedAmount = parseFloat(document.getElementById('editModalReceived').value) || 0;
+
+      let newTotalOriginal = 0;
+      let newFinalTotal = 0;
+
+      (bill.items || []).forEach((item, idx) => {
+        const desc = document.getElementById(`edit_desc_${idx}`).value;
+        const veh = document.getElementById(`edit_veh_${idx}`).value;
+        const orig = parseFloat(document.getElementById(`edit_orig_${idx}`).value) || 0;
+        const cut = parseFloat(document.getElementById(`edit_cut_${idx}`).value) || 0;
+
+        item.desc = desc;
+        item.vehicle = veh;
+        item.originalAmount = orig;
+        item.cutAmount = cut;
+
+        newTotalOriginal += orig;
+        newFinalTotal += Math.max(0, orig - cut);
+      });
+
+      bill.totalOriginal = newTotalOriginal;
+      bill.finalTotal = newFinalTotal;
+
+      database.ref('bills/' + billId).set(bill).then(() => {
+        alert('Bill updated successfully!');
+        closeEditBillModal();
+      });
+    }
+
     function goToStep2() {
-      setLiveDate();
-      const date = document.getElementById('billDate').value;
+      const selectedDateStr = document.getElementById('billDate').value;
       const proj = document.getElementById('projectName').value.trim();
       const session = JSON.parse(localStorage.getItem('ratin_session'));
       const bills = getBillsArray();
 
-      if (!date || !proj) {
-        alert('Please enter Date and Project Name!');
+      if (!selectedDateStr || !proj) {
+        alert('Please fill in the date and project name!');
         return;
       }
 
-      if (!editingBillId) {
-        const alreadySubmitted = bills.some(b => (b.user === session.username || b.userId === session.username) && b.date === date && b.status !== 'Rejected');
-        if (alreadySubmitted) {
-          alert('You have already submitted a bill for today! Only 1 daily bill permitted.');
-          return;
+      const proceedToNext = () => {
+        if (!editingBillId) {
+          const alreadySubmitted = bills.some(b => (b.user === session.username || b.userId === session.username) && b.date === selectedDateStr && b.status !== 'Rejected');
+          if (alreadySubmitted) {
+            alert('You have already submitted a bill for this date!');
+            return;
+          }
         }
+        document.getElementById('billStep1').classList.add('hidden');
+        document.getElementById('billStep2').classList.remove('hidden');
+      };
+
+      const targetDateStr = getStandardTargetDate();
+
+      if (session.role === 'manager' || session.role === 'admin') {
+        proceedToNext();
+        return;
       }
 
-      document.getElementById('billStep1').classList.add('hidden');
-      document.getElementById('billStep2').classList.remove('hidden');
+      if (selectedDateStr === targetDateStr) {
+        proceedToNext();
+      } else {
+        const permId = `${session.username}_${selectedDateStr}`;
+        database.ref('backdate_permissions/' + permId).once('value', (snapshot) => {
+          if (snapshot.exists()) {
+            proceedToNext();
+          } else {
+            alert(`Deadline expired for date ${selectedDateStr} (${globalSettings.cutoffTime || '08:00'} Cutoff Time Passed).\nPlease request permission from Manager.`);
+          }
+        });
+      }
     }
 
     function goToStep1() {
@@ -892,7 +1574,7 @@
       const amount = parseFloat(document.getElementById('lineAmount').value);
 
       if (!desc || !vehicle || isNaN(amount) || amount <= 0) {
-        alert('Please enter valid line item details!');
+        alert('Please provide valid description and amount!');
         return;
       }
 
@@ -904,7 +1586,7 @@
           item.originalAmount = amount;
         }
         editingLineId = null;
-        document.getElementById('saveLineBtn').innerText = 'Save Line';
+        document.getElementById('saveLineBtn').innerText = 'Add';
       } else {
         tempLineItems.push({ id: Date.now(), desc, vehicle, originalAmount: amount, cutAmount: 0 });
       }
@@ -922,7 +1604,7 @@
         document.getElementById('lineDesc').value = item.desc;
         document.getElementById('lineVehicle').value = item.vehicle;
         document.getElementById('lineAmount').value = item.originalAmount;
-        document.getElementById('saveLineBtn').innerText = 'Update Line';
+        document.getElementById('saveLineBtn').innerText = 'Update';
       }
     }
 
@@ -934,16 +1616,18 @@
     function renderTempLines() {
       const tbody = document.getElementById('lineItemsTable');
       tbody.innerHTML = '';
+      const currency = globalSettings.currency || 'BDT';
+
       tempLineItems.forEach((item, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td>${item.desc}</td>
           <td>${item.vehicle}</td>
-          <td>${item.originalAmount} BDT</td>
+          <td>${item.originalAmount} ${currency}</td>
           <td>
             <button class="btn btn-warning" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editTempLine(${item.id})">Edit</button>
-            <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="removeTempLine(${item.id})">Remove</button>
+            <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="removeTempLine(${item.id})">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -964,7 +1648,7 @@
 
     function submitCompleteBill() {
       if (tempLineItems.length === 0) {
-        alert('Add at least one line item before submitting!');
+        alert('Please add at least one line item!');
         return;
       }
 
@@ -999,7 +1683,7 @@
           document.getElementById('projectName').value = '';
           document.getElementById('receivedAmount').value = '0';
           goToStep1();
-          alert(`Bill Submitted Successfully!\nSerial: ${serialNo}`);
+          alert(`Bill submitted successfully!\nBill Number: ${serialNo}`);
         });
       };
 
@@ -1012,7 +1696,6 @@
       }
     }
 
-    // DASHBOARD & MANAGERS
     function loadManagerData(actionType) {
       currentManagerFilter = actionType;
       renderDashboard();
@@ -1040,19 +1723,28 @@
 
       let totalCostSum = 0;
       let totalReceivedSum = 0;
+      let totalCutSum = 0;
 
-      bills.forEach(bill => {
-        if ((bill.user === session.username || bill.userId === session.username) && bill.status === 'Approved') {
+      const currency = globalSettings.currency || 'BDT';
+      const bannerBills = bills.filter(b => (b.user === session.username || b.userId === session.username));
+
+      bannerBills.forEach(bill => {
+        if (bill.status === 'Approved') {
           totalCostSum += (bill.finalTotal || 0);
           totalReceivedSum += (bill.receivedAmount || 0);
+
+          (bill.items || []).forEach(item => {
+            totalCutSum += (item.cutAmount || 0);
+          });
         }
       });
 
       let netDue = Math.max(0, totalCostSum - totalReceivedSum);
+      let excessReceived = Math.max(0, totalReceivedSum - totalCostSum);
 
-      document.getElementById('bannerTotalCost').innerText = `${totalCostSum} BDT`;
-      document.getElementById('bannerReceived').innerText = `${totalReceivedSum} BDT`;
-      document.getElementById('bannerDue').innerText = `${netDue} BDT`;
+      document.getElementById('bannerTotalCost').innerHTML = `${totalCostSum} ${currency} <span class="cut-tag">(${totalCutSum} ${currency})</span>`;
+      document.getElementById('bannerReceived').innerHTML = `${totalReceivedSum} ${currency} <span class="excess-tag">(${excessReceived} ${currency})</span>`;
+      document.getElementById('bannerDue').innerText = `${netDue} ${currency}`;
 
       const managerControls = document.getElementById('managerControls');
       let displayedBills = [];
@@ -1082,7 +1774,7 @@
       }
 
       if (displayedBills.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:1.5rem;">No records found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:1.5rem;">No bill records found.</td></tr>`;
         return;
       }
 
@@ -1093,12 +1785,12 @@
         (bill.items || []).forEach((item, index) => {
           const itemNet = item.originalAmount - (item.cutAmount || 0);
           itemsHtml += `<li style="margin-bottom:6px; font-size:0.85rem;">
-            <strong>• ${index + 1}. ${item.desc}</strong> (${item.vehicle}): ${item.originalAmount} BDT`;
+            <strong>• ${index + 1}. ${item.desc}</strong> (${item.vehicle}): ${item.originalAmount} ${currency}`;
           
           if (session.role === 'manager' && bill.status === 'Pending') {
-            itemsHtml += ` | Cut: <input type="number" id="cut_${bill.id}_${index}" style="width:70px; padding:2px;" placeholder="0" value="${item.cutAmount || 0}"> BDT`;
+            itemsHtml += ` | Cut: <input type="number" id="cut_${bill.id}_${index}" style="width:70px; padding:2px;" placeholder="0" value="${item.cutAmount || 0}"> ${currency}`;
           } else if (item.cutAmount > 0) {
-            itemsHtml += ` <span style="color:var(--danger);">(Cut: -${item.cutAmount} BDT = ${itemNet} BDT)</span>`;
+            itemsHtml += ` <span style="color:var(--danger);">(Cut: -${item.cutAmount} ${currency} = ${itemNet} ${currency})</span>`;
           }
           itemsHtml += `</li>`;
         });
@@ -1110,25 +1802,84 @@
 
         let actionBtns = '';
         if (session.role === 'manager' && bill.status === 'Pending') {
-          actionBtns += `<button class="btn btn-success" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="passManagerBill(${bill.id})">Pass Bill</button> `;
+          actionBtns += `<button class="btn btn-success" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="passManagerBill(${bill.id})">Approve Bill</button> `;
           actionBtns += `<button class="btn btn-danger" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="rejectManagerBill(${bill.id})">Reject</button>`;
         } else if ((bill.user === session.username || bill.userId === session.username) && bill.status === 'Rejected') {
           actionBtns += `<button class="btn btn-warning" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="editRejectedBill(${bill.id})">Resubmit</button>`;
-        } else {
-          actionBtns = 'N/A';
         }
+        
+        if (bill.status === 'Approved') {
+          actionBtns += ` <button class="btn btn-primary" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="autoDownloadSingleBillPDF('${bill.id}')">Download PDF 📄</button>`;
+        }
+
+        if(!actionBtns) actionBtns = 'N/A';
 
         tr.innerHTML = `
           <td><span class="serial-tag">${bill.serialNo || 'N/A'}</span><br>${bill.date}</td>
           <td><strong>${bill.projectName || 'General'}</strong><br><small>By: ${bill.user || bill.userId}</small></td>
           <td>${itemsHtml}</td>
-          <td>${bill.receivedAmount || 0} BDT</td>
-          <td><strong>${bill.finalTotal} BDT</strong></td>
+          <td>${bill.receivedAmount || 0} ${currency}</td>
+          <td><strong>${bill.finalTotal} ${currency}</strong></td>
           <td><span class="status-badge ${statusClass}">${bill.status}</span></td>
           <td>${actionBtns}</td>
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    function autoDownloadSingleBillPDF(billId) {
+      const bills = getBillsArray();
+      const bill = bills.find(b => b.id == billId);
+      if(!bill) return;
+
+      const currency = globalSettings.currency || 'BDT';
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(20);
+      doc.setTextColor(37, 99, 235);
+      doc.text("RATIN.BD", 105, 20, null, null, "center");
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text("Official Billing Cash Memo", 105, 26, null, null, "center");
+
+      doc.setLineWidth(0.5);
+      doc.line(14, 30, 196, 30);
+
+      doc.setFontSize(10);
+      doc.setTextColor(30);
+      doc.text(`Bill No: ${bill.serialNo || 'N/A'}`, 14, 38);
+      doc.text(`Project: ${bill.projectName || 'General'}`, 14, 44);
+      doc.text(`Date: ${bill.date}`, 140, 38);
+      doc.text(`User: ${bill.user || bill.userId}`, 140, 44);
+
+      const tableData = (bill.items || []).map((item, index) => [
+        index + 1,
+        item.desc,
+        item.vehicle || '-',
+        `${item.originalAmount} ${currency}`,
+        `-${item.cutAmount || 0} ${currency}`,
+        `${Math.max(0, item.originalAmount - (item.cutAmount || 0))} ${currency}`
+      ]);
+
+      doc.autoTable({
+        startY: 50,
+        head: [['#', 'Description', 'Vehicle', 'Original', 'Deduction', 'Approved']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(10);
+      doc.text(`Total Bill: ${bill.totalOriginal || bill.finalTotal} ${currency}`, 140, finalY);
+      doc.text(`Received Amount: ${bill.receivedAmount || 0} ${currency}`, 140, finalY + 6);
+      doc.setFontSize(12);
+      doc.setTextColor(22, 163, 74);
+      doc.text(`Final Amount: ${bill.finalTotal} ${currency}`, 140, finalY + 14);
+
+      doc.save(`BILL_${bill.serialNo || bill.id}.pdf`);
     }
 
     function passManagerBill(billId) {
@@ -1139,7 +1890,7 @@
         let newTotal = 0;
         (bill.items || []).forEach((item, index) => {
           const cutInput = document.getElementById(`cut_${billId}_${index}`);
-          const cutVal = parseFloat(cutInput ? cutInput.value : 0) || 0;
+          const cutVal = cutInput ? (parseFloat(cutInput.value) || 0) : (item.cutAmount || 0);
           item.cutAmount = cutVal;
           newTotal += Math.max(0, item.originalAmount - cutVal);
         });
@@ -1147,7 +1898,7 @@
         bill.finalTotal = newTotal;
         bill.status = 'Approved';
         database.ref('bills/' + billId).set(bill).then(() => {
-          alert(`Bill ${bill.serialNo} passed successfully!`);
+          alert(`Bill ${bill.serialNo} approved!`);
         });
       }
     }
@@ -1168,7 +1919,7 @@
       const bill = bills.find(b => b.id == billId);
       if (bill) {
         editingBillId = bill.id;
-        setLiveDate();
+        document.getElementById('billDate').value = bill.date || '';
         document.getElementById('projectName').value = bill.projectName || '';
         document.getElementById('receivedAmount').value = bill.receivedAmount || 0;
         tempLineItems = [...(bill.items || [])];
@@ -1178,7 +1929,16 @@
       }
     }
 
-    window.onload = initApp;
+    // Init app execution
+    window.onload = function() {
+      initApp();
+
+      setTimeout(function() {
+        if (typeof hidePageLoader === 'function') {
+          hidePageLoader();
+        }
+      }, 1000);
+    };
   </script>
 </body>
 </html>
