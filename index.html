@@ -18,9 +18,10 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+    body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; position: relative; padding-bottom: 90px; }
 
     #pageLoader {
+      display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: var(--bg);
@@ -75,6 +76,15 @@
     .banner-card div { font-size: 1.4rem; font-weight: bold; color: var(--secondary); margin-top: 5px; }
 
     .cut-tag { color: var(--danger); font-size: 0.9rem; font-weight: bold; margin-left: 4px; }
+    /* CUT BILL: ONLY cut amount text is red */
+    .cut-bill-row > td { color: inherit !important; }
+
+    .cut-amount-text,
+    .cut-amount-text * {
+      color: #dc2626 !important;
+      font-weight: 700 !important;
+    }
+
     .excess-tag { color: var(--success); font-size: 0.9rem; font-weight: bold; margin-left: 4px; }
 
     .btn { padding: 0.6rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
@@ -106,12 +116,12 @@
 
     .status-badge { padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; display: inline-block; }
     .status-pending { background-color: #fef3c7; color: #92400e; }
+    .status-audit { background-color: #e0f2fe; color: #0369a1; }
     .status-approved { background-color: #dcfce7; color: #166534; }
     .status-rejected { background-color: #fee2e2; color: #991b1b; }
     .status-inactive { background-color: #e2e8f0; color: #475569; }
 
     .serial-tag { background: #e0f2fe; color: #0369a1; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; font-family: monospace; display: inline-block; margin-bottom: 4px; }
-
     .hidden { display: none !important; }
     .step-footer { display: flex; justify-content: flex-end; margin-top: 1.5rem; }
     
@@ -124,6 +134,36 @@
     .modal-box { background: white; padding: 1.8rem; border-radius: 12px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 
     .profile-photo-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); margin-top: 5px; display: block; }
+    .line-photo-thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer; }
+
+    .line-item-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.2fr auto;
+      gap: 0.5rem;
+      align-items: end;
+    }
+
+    .popup-select-input { cursor: pointer; background-color: #fff; position: relative; }
+    .popup-list-container { max-height: 250px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 10px; }
+    .popup-list-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
+    .popup-list-item:hover { background-color: #eff6ff; color: var(--primary); font-weight: 600; }
+
+    /* Support Floating Box (Bottom Right) */
+    .support-box {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 999;
+      border: 1px solid #334155;
+      line-height: 1.4;
+    }
+    .support-box strong { color: #38bdf8; font-size: 0.8rem; display: block; margin-bottom: 2px; }
 
     @media screen and (max-width: 768px) {
       header { flex-direction: column !important; gap: 10px !important; text-align: center !important; padding: 12px !important; }
@@ -133,6 +173,7 @@
       .grid-3 { grid-template-columns: 1fr !important; }
       .manager-controls { flex-direction: column; }
       .manager-controls button { width: 100%; }
+      .line-item-grid { grid-template-columns: 1fr !important; }
     }
   </style>
 
@@ -157,8 +198,18 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
   </script>
+
+<style id="cutAmountRedFix">
+  .cut-amount-text {
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+  }
+  .cut-amount-text * {
+    color: #dc2626 !important;
+  }
+</style>
 </head>
-<body>
+<body onload="initAppSafe()">
 
   <!-- LOADING OVERLAY -->
   <div id="pageLoader">
@@ -169,7 +220,7 @@
   <header>
     <div>
       <h1 style="display:inline-block; vertical-align:middle;">RATIN.BD Billing Pro</h1>
-      <span class="cloud-status"><span class="status-dot"></span> 100% Cloud Synced</span>
+      <span class="cloud-status"><span class="status-dot"></span> online</span>
     </div>
     <div id="navRight" class="hidden" style="display:flex; gap:0.5rem; align-items:center;">
       <span id="userInfoText" style="margin-right:0.5rem; font-weight:600; font-size: 0.9rem; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 8px;"></span>
@@ -276,10 +327,75 @@
         </div>
       </div>
 
+      <!-- ACCOUNTS SEARCH DASHBOARD PANEL -->
+      <div id="accountsSearchPanel" class="card hidden" style="border-left: 5px solid var(--primary);">
+        <h3>📊 Accounts Inspection & Requisition Dashboard</h3>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Inspect individual user balances and search daily requisition reports.</p>
+
+        <!-- 1. USER BALANCE SEARCH -->
+        <div style="background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:1.5rem;">
+          <h4 style="margin-bottom:0.8rem;">1. User Balance Search</h4>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+            <div class="form-group" style="margin:0; flex:1; min-width:200px;">
+              <label>Search User ID</label>
+              <input type="text" id="accSearchUserId" placeholder="Enter User ID / Username">
+            </div>
+            <button class="btn btn-primary" onclick="searchUserSummaryForAccounts()" style="height:42px;">Search Summary</button>
+          </div>
+
+          <div id="accUserSummaryResult" class="grid-3 hidden" style="margin-top:1rem;">
+            <div class="banner-card">
+              <h4>Total Approved Bills (Cost)</h4>
+              <div id="accResCost">0 BDT <span id="accResCostCut" class="cut-tag">(0 BDT)</span></div>
+            </div>
+            <div class="banner-card" style="border-color: var(--success);">
+              <h4>Total Received Money (Received)</h4>
+              <div id="accResReceived">0 BDT <span id="accResRecExcess" class="excess-tag">(0 BDT)</span></div>
+            </div>
+            <div class="banner-card" style="border-color: var(--warning);">
+              <h4>Total Outstanding (Due)</h4>
+              <div id="accResDue">0 BDT</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. TODAY REQUISITION SEARCH -->
+        <div style="background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #cbd5e1;">
+          <h4 style="margin-bottom:0.8rem;">2. Today Requisition Search</h4>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+            <div class="form-group" style="margin:0; flex:1; min-width:180px;">
+              <label>Select Date</label>
+              <input type="date" id="accReqDate">
+            </div>
+            <div class="form-group" style="margin:0; flex:1; min-width:180px;">
+              <label>User ID (Optional)</label>
+              <input type="text" id="accReqUserId" placeholder="Specific User ID or empty for All">
+            </div>
+            <button class="btn btn-success" onclick="searchTodayRequisition()" style="height:42px;">Check</button>
+          </div>
+
+          <div id="accReqResultTable" class="table-responsive hidden">
+            <table style="margin-top:1rem;">
+              <thead>
+                <tr>
+                  <th>Date & Serial</th>
+                  <th>User ID</th>
+                  <th>Submitted Amount</th>
+                  <th>Cut Amount</th>
+                  <th>Passed / Approved Amount</th>
+                  <th>Received Money</th>
+                </tr>
+              </thead>
+              <tbody id="accReqTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- MANAGER BACKDATE PERMISSION PANEL -->
       <div id="managerPermCard" class="card hidden" style="border-left: 5px solid var(--warning);">
         <h3>📅 Backdate / Missing Date Bill Permission Panel</h3>
-        <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Search User ID or Phone Number to grant permission for past date bill submission after cutoff time.</p>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Grant permission for past date bill submission (Exclusive Manager Access).</p>
         
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
           <div class="form-group" style="margin:0; flex:1; min-width:200px;">
@@ -318,7 +434,7 @@
         </div>
       </div>
 
-      <!-- ADMIN DASHBOARD -->
+      <!-- ADMIN PANEL -->
       <div id="adminPanel" class="card hidden">
         <h3>Admin Control & User Management Panel</h3>
 
@@ -343,7 +459,7 @@
         </div>
         
         <div style="background:#f8fafc; padding:1.2rem; border-radius:10px; margin:1rem 0; border:1px solid #e2e8f0;">
-          <h4 style="margin-bottom:0.8rem;">Create New User / Manager</h4>
+          <h4 style="margin-bottom:0.8rem;">Create New User / Manager / Audit / Accounts</h4>
           <form onsubmit="adminCreateUser(event)" class="admin-create-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:0.5rem; align-items:end;">
             <div class="form-group" style="margin:0;"><label>Username</label><input type="text" id="admNewUser" required></div>
             <div class="form-group" style="margin:0;"><label>Email</label><input type="email" id="admNewEmail" required></div>
@@ -353,9 +469,11 @@
               <select id="admNewRole">
                 <option value="user">User</option>
                 <option value="manager">Manager</option>
+                <option value="audit">Audit</option>
+                <option value="accounts">Accounts</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-success" style="height:42px;">Create</button>
+            <button type="submit" class="btn btn-success" style="height:42px;">Create Account</button>
           </form>
         </div>
 
@@ -408,24 +526,46 @@
         </div>
       </div>
 
-      <!-- USER & MANAGER BILLING WIZARD -->
+      <!-- USER BILLING WIZARD -->
       <div id="userBillingPanel" class="card hidden">
         <div id="billStep1">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>Step 1: Select Date & Project</h3>
+            <h3>Step 1: Select Date, Location & Project</h3>
             <span id="step1RoleNotice" class="status-badge status-approved">Manager Plan Enabled</span>
           </div>
-          <div class="step-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:1rem;">
-            <div class="form-group">
-              <label id="cutoffNoticeLabel">Select Date (Daily Deadline Applies)</label>
-              <input type="date" id="billDate" style="font-weight:600;">
-              <small id="dateHelpText" style="color:#64748b;">Note: Previous date bills require Manager permission.</small>
+
+          <div class="step-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:1.2rem;">
+            <div class="form-group" style="margin:0;">
+              <label id="cutoffNoticeLabel">Select Date (Daily Deadline)</label>
+              <input type="date" id="billDate" style="font-weight:600;" onchange="checkAndToggleDateLock(this.value)">
             </div>
-            <div class="form-group">
+
+            <div class="form-group" style="margin:0;">
               <label>Project Name</label>
               <input type="text" id="projectName" placeholder="Enter project name" required>
             </div>
+
+            <div class="form-group" style="margin:0;">
+              <label>Division</label>
+              <input type="text" id="selectedDivision" class="popup-select-input" placeholder="Select Division" readonly onclick="openLocationPopup('division')">
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label>District</label>
+              <input type="text" id="selectedDistrict" class="popup-select-input" placeholder="Select District" readonly onclick="openLocationPopup('district')">
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label>Thana / Upazila</label>
+              <input type="text" id="selectedThana" class="popup-select-input" placeholder="Select Thana / Upazila" readonly onclick="openLocationPopup('thana')">
+            </div>
           </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <small id="dateHelpText" style="color:#64748b;">Note: Previous date bills require Manager permission.</small>
+            <button type="button" class="btn btn-warning" id="unlockLocationBtn" onclick="unlockLocationSelection()" style="padding:0.3rem 0.6rem; font-size:0.75rem;">Change Location</button>
+          </div>
+
           <div class="step-footer">
             <button class="btn btn-primary" onclick="goToStep2()">Next Step &rarr;</button>
           </div>
@@ -439,20 +579,44 @@
           
           <div style="background:#f8fafc; padding:1.2rem; border-radius:10px; margin:1rem 0; border:1px solid #e2e8f0;">
             <h4 id="lineItemFormTitle" style="margin-bottom:0.5rem;">Add Item</h4>
-            <div class="line-item-grid" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:0.5rem; align-items:end;">
+            <div class="line-item-grid">
               <div class="form-group" style="margin:0;">
                 <label>Description</label>
                 <input type="text" id="lineDesc" placeholder="Enter work description">
               </div>
               <div class="form-group" style="margin:0;">
                 <label>Vehicle / Details</label>
-                <input type="text" id="lineVehicle" placeholder="e.g. Bike/Bus/Van">
+                <input type="text" id="lineVehicle" list="vehicleOptions" placeholder="Select or type vehicle" onfocus="this.value=''">
+                <datalist id="vehicleOptions">
+                  <option value="Easy-bike">
+                  <option value="motorcycle">
+                  <option value="bus">
+                  <option value="pickup truck">
+                  <option value="motorized van">
+                  <option value="Laguna">
+                  <option value="rickshaw">
+                  <option value="train">
+                  <option value="metro rail">
+                  <option value="CNG">
+                  <option value="microbus">
+                  <option value="speedboat">
+                  <option value="boat">
+                </datalist>
               </div>
               <div class="form-group" style="margin:0;">
                 <label>Amount (<span class="sys-curr-label">BDT</span>)</label>
                 <input type="number" id="lineAmount" placeholder="Amount">
               </div>
+              <div class="form-group" style="margin:0;">
+                <label>Photo (Optional)</label>
+                <input type="file" id="linePhoto" accept="image/*" onchange="handleLinePhotoUpload(event)">
+                <input type="hidden" id="linePhotoBase64">
+              </div>
               <button class="btn btn-success" id="saveLineBtn" onclick="saveLineItem()" style="height:42px;">Add</button>
+            </div>
+            <div id="linePhotoPreviewContainer" style="margin-top:0.5rem;" class="hidden">
+              <img id="linePhotoPreview" src="" class="line-photo-thumb" alt="Item Photo">
+              <button type="button" class="btn btn-danger" style="padding:0.1rem 0.4rem; font-size:0.7rem; margin-left:5px;" onclick="clearLinePhoto()">Remove</button>
             </div>
           </div>
 
@@ -465,6 +629,7 @@
                   <th>Description</th>
                   <th>Vehicle</th>
                   <th>Amount (<span class="sys-curr-label">BDT</span>)</th>
+                  <th>Photo</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -486,20 +651,27 @@
       </div>
 
       <!-- BILL RECORDS TABLE CARD -->
-      <div id="billingRecordsCard" class="card">
-        <h3>Billing Records & Status Monitoring</h3>
+      <div id="billingRecordsCard" class="card" style="margin-top:1.5rem; border:2px solid var(--primary); box-shadow:0 8px 24px rgba(15,23,42,.08);">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div>
+            <h3>Billing Records & Status Monitoring</h3>
+            <p id="billingPanelRoleText" style="font-size:0.82rem; color:#64748b; margin-top:4px;">Billing Records • Search by Date • Status Monitoring</p>
+          </div>
+          <span id="billingWorkflowBadge" class="status-badge status-audit hidden">Approval Workflow</span>
+        </div>
         
-        <div class="manager-controls hidden" id="managerControls">
-            <button class="btn btn-primary" onclick="loadManagerData('ALL_BILLS')">All Bills</button>
-            <button class="btn btn-primary" onclick="loadManagerData('MY_BILLS')">My Bills</button>
-            <button class="btn btn-primary" onclick="loadManagerData('USER_BILLS')">User Bills</button>
-            <button class="btn btn-warning" onclick="loadManagerData('PENDING_BILLS')">Pending Bills</button>
+        <div class="manager-controls" id="managerControls">
+            <button class="btn btn-primary" onclick="loadManagerData('ALL_BILLS')">📋 All Bills</button>
+            <button class="btn btn-primary" onclick="loadManagerData('MY_BILLS')">👤 My Bills</button>
+            <button class="btn btn-primary" onclick="loadManagerData('USER_BILLS')">👥 User Bills</button>
+            <button class="btn btn-warning" id="pendingBillsBtn" onclick="loadManagerData('PENDING_BILLS')">⏳ Pending Bills</button>
         </div>
 
         <div class="user-billing-records" id="userDateSearchBox">
             <div class="search-box">
                 <label for="filterDateInput" style="font-weight:600; font-size:0.9rem;">Date Filter:</label>
-                <input type="date" id="filterDateInput" onchange="filterUserBillsBySelectedDate()" style="padding:0.4rem 0.8rem; border-radius:6px; border:1px solid #cbd5e1; font-size:0.9rem;">
+                <input type="date" id="filterDateInput" style="padding:0.4rem 0.8rem; border-radius:6px; border:1px solid #cbd5e1; font-size:0.9rem;">
+                <button class="btn btn-primary" onclick="filterUserBillsBySelectedDate()" style="font-size:0.8rem; padding:0.4rem 0.8rem;">Search Records</button>
                 <button class="btn btn-secondary" onclick="clearUserDateFilter()" style="font-size:0.8rem; padding:0.4rem 0.8rem;">Clear Filter</button>
             </div>
         </div>
@@ -509,7 +681,7 @@
             <thead>
               <tr>
                 <th>Bill Serial & Date</th>
-                <th>Project / User</th>
+                <th>Project & Location</th>
                 <th>Bill Details & Deductions</th>
                 <th>Received Amount</th>
                 <th>Total Amount</th>
@@ -517,11 +689,31 @@
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody id="userBillsTableBody"></tbody>
+            <tbody id="userBillsTableBody">
+              <tr><td colspan="7" style="text-align:center; color:#64748b; padding:1.5rem;">Billing records are ready. Select a date to filter records, or leave date empty to see all available records.</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- LOCATION POPUP MODAL -->
+  <div id="locationPopupModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3 id="locationPopupTitle" style="margin-bottom:0.5rem; color:var(--secondary);">Select Item</h3>
+      <p id="locationPopupSub" style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Click line by line to choose</p>
+      
+      <div class="form-group" style="margin-bottom:0.5rem;">
+        <input type="text" id="popupSearchFilter" placeholder="Search line by line..." onkeyup="filterPopupListItems()">
+      </div>
+
+      <div id="popupListContainer" class="popup-list-container"></div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:1rem;">
+        <button class="btn btn-secondary" onclick="closeLocationPopup()">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -558,6 +750,8 @@
         <select id="admEditRole">
           <option value="user">User</option>
           <option value="manager">Manager</option>
+          <option value="audit">Audit</option>
+          <option value="accounts">Accounts</option>
         </select>
       </div>
 
@@ -670,6 +864,25 @@
     </div>
   </div>
 
+  <!-- IMAGE PREVIEW MODAL -->
+  <div id="imagePreviewModal" class="modal-overlay hidden">
+    <div class="modal-box" style="text-align:center; max-width:600px;">
+      <h3 style="margin-bottom:1rem;">Attachment Photo</h3>
+      <img id="fullImagePreview" src="" style="max-width:100%; max-height:70vh; border-radius:8px; border:1px solid #cbd5e1;">
+      <div style="margin-top:1rem; text-align:right;">
+        <button class="btn btn-secondary" onclick="closeImagePreviewModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIXED FLOATING SUPPORT BOX -->
+  <div class="support-box">
+    <strong>Support</strong>
+    Email: ratinhossenemon@gamil.com<br>
+    Phone: 01321752851<br>
+    WhatsApp: 01321752851
+  </div>
+
   <script>
     let globalUsers = {};
     let globalBills = {};
@@ -690,6 +903,201 @@
     let selectedBackdateUser = null;
 
     let autoLogoutTimer = null;
+    let currentPopupType = null;
+    let isLocationLocked = false;
+
+    // BANGLADESH LOCATION DATA
+    const bdData = {
+      "Dhaka": {
+        "Dhaka": ["Dhanmondi", "Gulshan", "Mirpur", "Uttara", "Savar", "Keraniganj", "Tejgaon", "Mohammadpur"],
+        "Gazipur": ["Gazipur Sadar", "Kaliakair", "Kapasia", "Sreepur", "Tongi"],
+        "Narayanganj": ["Narayanganj Sadar", "Fatullah", "Siddhirganj", "Araihazar", "Bandar", "Rupganj", "Sonargaon"],
+        "Tangail": ["Tangail Sadar", "Mirzapur", "Kalihati", "Ghatail", "Madhupur"],
+        "Faridpur": ["Faridpur Sadar", "Bhanga", "Boalmari", "Nagarkanda"],
+        "Manikganj": ["Manikganj Sadar", "Singair", "Saturia"],
+        "Munshiganj": ["Munshiganj Sadar", "Sreenagar", "Gazaria", "Sirajdikhan"],
+        "Rajbari": ["Rajbari Sadar", "Pangsha", "Baliakandi"],
+        "Madaripur": ["Madaripur Sadar", "Rajoir", "Kalkini"],
+        "Gopalganj": ["Gopalganj Sadar", "Kashiani", "Kotalipara", "Tungipara"],
+        "Shariatpur": ["Shariatpur Sadar", "Zajira", "Naria"],
+        "Narsingdi": ["Narsingdi Sadar", "Palash", "Shibpur", "Raipura"],
+        "Kishoreganj": ["Kishoreganj Sadar", "Bhairab", "Katiadi"]
+      },
+      "Chattogram": {
+        "Chattogram": ["Panchlaish", "Kotwali", "Halishahar", "Patiya", "Hathazari", "Sitakunda", "Mirsarai", "Anawara", "Rangunia", "Boalkhali"],
+        "Cox's Bazar": ["Cox's Bazar Sadar", "Teknaf", "Ukhia", "Chakaria", "Ramu", "Maheshkhali"],
+        "Cumilla": ["Cumilla Sadar", "Laksham", "Daudkandi", "Chandina", "Debidwar", "Burichang"],
+        "Feni": ["Feni Sadar", "Daganbhuiyan", "Chhagalnaiya", "Parshuram"],
+        "Noakhali": ["Noakhali Sadar", "Begumganj", "Senbagh", "Chhatkhil"],
+        "Lakshmipur": ["Lakshmipur Sadar", "Raipur", "Ramganj"],
+        "Brahmanbaria": ["Brahmanbaria Sadar", "Ashuganj", "Kasba", "Nabinagar"],
+        "Chandpur": ["Chandpur Sadar", "Hajiganj", "Matlab North", "Matlab South"],
+        "Rangamati": ["Rangamati Sadar", "Kaptai", "Baghaichhari"],
+        "Bandarban": ["Bandarban Sadar", "Lama", "Thanchi"],
+        "Khagrachhari": ["Khagrachhari Sadar", "Dighinala", "Ramgarh"]
+      },
+      "Rajshahi": {
+        "Rajshahi": ["Boalia", "Rajpara", "Paba", "Godagari", "Tanore", "Bagha"],
+        "Bogra": ["Bogra Sadar", "Sherpur", "Shajahanpur", "Shibganj"],
+        "Pabna": ["Pabna Sadar", "Ishwardi", "Santhia", "Bera"],
+        "Sirajganj": ["Sirajganj Sadar", "Ullapara", "Shahjadpur", "Belkuchi"],
+        "Naogaon": ["Naogaon Sadar", "Dhamoirhat", "Manda", "Raninagar"],
+        "Natore": ["Natore Sadar", "Baraigram", "Singra"],
+        "Chapainawabganj": ["Chapainawabganj Sadar", "Shibganj", "Gomastapur"],
+        "Joypurhat": ["Joypurhat Sadar", "Kalai", "Khetlal"]
+      },
+      "Khulna": {
+        "Khulna": ["Khulna Sadar", "Sonadanga", "Daulatpur", "Rupsha", "Dumuria", "Batiaghata"],
+        "Jashore": ["Jashore Sadar", "Sharsha", "Jhikargachha", "Manirampur"],
+        "Satkhira": ["Satkhira Sadar", "Kalaroa", "Shyamnagar"],
+        "Kushtia": ["Kushtia Sadar", "Kumarkhali", "Mirpur"],
+        "Bagerhat": ["Bagerhat Sadar", "Mongla", "Rampal"],
+        "Jhenaidah": ["Jhenaidah Sadar", "Kaliganj", "Shailkupa"],
+        "Chuadanga": ["Chuadanga Sadar", "Alamdanga"],
+        "Meherpur": ["Meherpur Sadar", "Gangni"],
+        "Narail": ["Narail Sadar", "Lohagara"],
+        "Magura": ["Magura Sadar", "Sreepur"]
+      },
+      "Barishal": {
+        "Barishal": ["Barishal Sadar", "Babuganj", "Gournadi", "Bakerganj"],
+        "Bhola": ["Bhola Sadar", "Char Fasson", "Borhanuddin"],
+        "Patuakhali": ["Patuakhali Sadar", "Galachipa", "Kuakata"],
+        "Pirojpur": ["Pirojpur Sadar", "Mathbaria", "Bhandaria"],
+        "Barguna": ["Barguna Sadar", "Amtali", "Patharghata"],
+        "Jhalokathi": ["Jhalokathi Sadar", "Rajapur"]
+      },
+      "Sylhet": {
+        "Sylhet": ["Sylhet Sadar", "Beanibazar", "Golapganj", "Jaintiapur"],
+        "Moulvibazar": ["Moulvibazar Sadar", "Sreemangal", "Kulaura"],
+        "Habiganj": ["Habiganj Sadar", "Nabiganj", "Madhabpur"],
+        "Sunamganj": ["Sunamganj Sadar", "Chhatak", "Jagannathpur"]
+      },
+      "Rangpur": {
+        "Rangpur": ["Rangpur Sadar", "Mithapukur", "Pirganj", "Badarganj"],
+        "Dinajpur": ["Dinajpur Sadar", "Birampur", "Phulbari"],
+        "Gaibandha": ["Gaibandha Sadar", "Gobindaganj", "Palashbari"],
+        "Kurigram": ["Kurigram Sadar", "Nageshwari", "Rumaru"],
+        "Nilphamari": ["Nilphamari Sadar", "Saidpur", "Domar"],
+        "Panchagarh": ["Panchagarh Sadar", "Tetulia"],
+        "Thakurgaon": ["Thakurgaon Sadar", "Pirganj"],
+        "Lalmonirhat": ["Lalmonirhat Sadar", "Hatibandha"]
+      },
+      "Mymensingh": {
+        "Mymensingh": ["Mymensingh Sadar", "Muktagachha", "Bhaluka", "Trishal", "Gafargaon"],
+        "Jamalpur": ["Jamalpur Sadar", "Sarishabari", "Isampur"],
+        "Netrokona": ["Netrokona Sadar", "Mohanganj", "Durgapur"],
+        "Sherpur": ["Sherpur Sadar", "Nalitabari", "Nakla"]
+      }
+    };
+
+    function openLocationPopup(type) {
+      if (isLocationLocked) {
+        alert("Location is fixed for current bill! Click 'Change Location' if you need to modify.");
+        return;
+      }
+
+      currentPopupType = type;
+      const modal = document.getElementById('locationPopupModal');
+      const title = document.getElementById('locationPopupTitle');
+      const listContainer = document.getElementById('popupListContainer');
+      document.getElementById('popupSearchFilter').value = '';
+
+      listContainer.innerHTML = '';
+      modal.classList.remove('hidden');
+
+      if (type === 'division') {
+        title.innerText = "Select Division";
+        const divisions = Object.keys(bdData);
+        divisions.forEach(div => {
+          const divEl = document.createElement('div');
+          divEl.className = 'popup-list-item';
+          divEl.innerText = div;
+          divEl.onclick = () => selectLocationItem('division', div);
+          listContainer.appendChild(divEl);
+        });
+      } else if (type === 'district') {
+        const selectedDiv = document.getElementById('selectedDivision').value;
+        if (!selectedDiv) {
+          alert("Please select Division first!");
+          closeLocationPopup();
+          return;
+        }
+        title.innerText = `Select District in ${selectedDiv}`;
+        const districts = Object.keys(bdData[selectedDiv] || {});
+        districts.forEach(dist => {
+          const divEl = document.createElement('div');
+          divEl.className = 'popup-list-item';
+          divEl.innerText = dist;
+          divEl.onclick = () => selectLocationItem('district', dist);
+          listContainer.appendChild(divEl);
+        });
+      } else if (type === 'thana') {
+        const selectedDiv = document.getElementById('selectedDivision').value;
+        const selectedDist = document.getElementById('selectedDistrict').value;
+        if (!selectedDiv || !selectedDist) {
+          alert("Please select Division and District first!");
+          closeLocationPopup();
+          return;
+        }
+        title.innerText = `Select Thana / Upazila in ${selectedDist}`;
+        const thanas = bdData[selectedDiv]?.[selectedDist] || [];
+        thanas.forEach(thana => {
+          const divEl = document.createElement('div');
+          divEl.className = 'popup-list-item';
+          divEl.innerText = thana;
+          divEl.onclick = () => selectLocationItem('thana', thana);
+          listContainer.appendChild(divEl);
+        });
+      }
+    }
+
+    function selectLocationItem(type, val) {
+      if (type === 'division') {
+        const currentDiv = document.getElementById('selectedDivision').value;
+        if (currentDiv !== val) {
+          document.getElementById('selectedDivision').value = val;
+          document.getElementById('selectedDistrict').value = '';
+          document.getElementById('selectedThana').value = '';
+        }
+      } else if (type === 'district') {
+        const currentDist = document.getElementById('selectedDistrict').value;
+        if (currentDist !== val) {
+          document.getElementById('selectedDistrict').value = val;
+          document.getElementById('selectedThana').value = '';
+        }
+      } else if (type === 'thana') {
+        document.getElementById('selectedThana').value = val;
+      }
+      closeLocationPopup();
+    }
+
+    function filterPopupListItems() {
+      const filter = document.getElementById('popupSearchFilter').value.toLowerCase();
+      const items = document.querySelectorAll('#popupListContainer .popup-list-item');
+      items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(filter) ? "" : "none";
+      });
+    }
+
+    function closeLocationPopup() {
+      document.getElementById('locationPopupModal').classList.add('hidden');
+    }
+
+    function lockLocationSelection() {
+      isLocationLocked = true;
+      document.getElementById('selectedDivision').style.backgroundColor = '#f1f5f9';
+      document.getElementById('selectedDistrict').style.backgroundColor = '#f1f5f9';
+      document.getElementById('selectedThana').style.backgroundColor = '#f1f5f9';
+    }
+
+    function unlockLocationSelection() {
+      isLocationLocked = false;
+      document.getElementById('selectedDivision').style.backgroundColor = '#fff';
+      document.getElementById('selectedDistrict').style.backgroundColor = '#fff';
+      document.getElementById('selectedThana').style.backgroundColor = '#fff';
+      alert("Location selection unlocked. You can change Division, District or Thana now.");
+    }
 
     function getAutoLogoutDuration() {
       const mins = parseInt(globalSettings.autoLogoutMins, 10) || 5;
@@ -726,9 +1134,7 @@
     });
 
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        resetAutoLogoutTimer();
-      }
+      if (!document.hidden) resetAutoLogoutTimer();
     });
 
     function getUsersArray() {
@@ -746,16 +1152,52 @@
       return `${formattedName}-BILL-${serialNumber}`;
     }
 
-    function hidePageLoader() {
+    // Startup/auth state: keep the application locked until live Firebase user
+    // data is available. This prevents localStorage edits from bypassing login.
+    let startupStartedAt = Date.now();
+    let startupFinished = false;
+
+    function setPageLoader(message, show = true) {
       const loader = document.getElementById('pageLoader');
-      if (loader) {
-        loader.style.display = 'none';
+      if (!loader) return;
+      loader.style.display = show ? 'flex' : 'none';
+      const text = loader.querySelector('p');
+      if (text && message) text.textContent = message;
+    }
+
+    function hidePageLoader() {
+      setPageLoader('', false);
+    }
+
+    function finishStartup() {
+      if (startupFinished || !isDataLoaded) return;
+      const wait = Math.max(0, 2000 - (Date.now() - startupStartedAt));
+      setTimeout(() => {
+        if (startupFinished || !isDataLoaded) return;
+        startupFinished = true;
+        checkSession();
+        hidePageLoader();
+      }, wait);
+    }
+
+    function initAppSafe() {
+      startupStartedAt = Date.now();
+      startupFinished = false;
+      setPageLoader('Syncing Data...', true);
+      try {
+        initApp();
+      } catch (err) {
+        console.error('Startup error:', err);
+        setPageLoader('Cloud connection unavailable. Please refresh...', true);
       }
     }
 
     function initApp() {
       setLiveDate();
       document.getElementById('adminFilterDate').valueAsDate = new Date();
+      if (typeof firebase === 'undefined' || typeof database === 'undefined') {
+        throw new Error('Firebase SDK is unavailable');
+      }
 
       database.ref('settings').on('value', (snapshot) => {
         if (snapshot.exists()) {
@@ -764,6 +1206,8 @@
           database.ref('settings').set(globalSettings);
         }
         applySystemSettings();
+      }, (error) => {
+        console.warn('Settings sync error:', error);
       });
 
       database.ref('users').on('value', (snapshot) => {
@@ -784,10 +1228,12 @@
         }
 
         renderAdminUsers();
-        checkSession();
-        
         isDataLoaded = true;
-        hidePageLoader();
+        finishStartup();
+      }, (error) => {
+        console.error('User sync error:', error);
+        isDataLoaded = false;
+        setPageLoader('Network / Cloud connection problem. Waiting for live data...', true);
       });
 
       database.ref('bills').on('value', (snapshot) => {
@@ -796,11 +1242,20 @@
         if (document.getElementById('adminFilterDate').value) {
           searchAdminDateBills();
         }
+      }, (error) => {
+        console.warn('Bills sync error:', error);
       });
 
       database.ref('backdate_permissions').on('value', (snapshot) => {
         globalPermissions = snapshot.val() || {};
         renderBackdatePermissions();
+
+        const billDateInput = document.getElementById('billDate');
+        if (billDateInput && billDateInput.value) {
+          checkAndToggleDateLock(billDateInput.value);
+        }
+      }, (error) => {
+        console.warn('Permission sync error:', error);
       });
     }
 
@@ -859,13 +1314,33 @@
       if (billDateInput && !billDateInput.value) {
         billDateInput.value = targetDate;
       }
+      checkAndToggleDateLock(billDateInput.value);
     }
 
-    function formatDateToString(d) {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+    function checkAndToggleDateLock(selectedDateStr) {
+      const billDateInput = document.getElementById('billDate');
+      const session = JSON.parse(localStorage.getItem('ratin_session'));
+      if (!session || !billDateInput) return;
+
+      if (session.role === 'manager' || session.role === 'admin') {
+        billDateInput.removeAttribute('disabled');
+        return;
+      }
+
+      const targetDateStr = getStandardTargetDate();
+
+      if (selectedDateStr === targetDateStr) {
+        billDateInput.removeAttribute('disabled');
+      } else {
+        const permId = `${session.username}_${selectedDateStr}`;
+        database.ref('backdate_permissions/' + permId).once('value', (snapshot) => {
+          if (snapshot.exists()) {
+            billDateInput.removeAttribute('disabled');
+          } else {
+            billDateInput.setAttribute('disabled', 'disabled');
+          }
+        });
+      }
     }
 
     function togglePasswordVisibility(inputId, btn) {
@@ -965,7 +1440,7 @@
       } else {
         document.getElementById('registerForm').classList.add('hidden');
         document.getElementById('loginForm').classList.remove('hidden');
-        document.getElementById('authSubtitle').innerText = 'Sign in to get live billing data updates across all devices';
+        document.getElementById('authSubtitle').innerText = 'Welcome to login page';
       }
     }
 
@@ -1039,66 +1514,139 @@
       });
     }
 
+    function saveUiState() {
+      try {
+        const step2 = document.getElementById('billStep2');
+        localStorage.setItem('ratin_ui_state', JSON.stringify({
+          billingStep: step2 && !step2.classList.contains('hidden') ? 2 : 1,
+          scrollY: window.scrollY || 0,
+          managerFilter: currentManagerFilter || 'ALL_BILLS',
+          selectedDate: selectedUserDateFilter || ''
+        }));
+      } catch (e) {}
+    }
+
+    function restoreUiState() {
+      try {
+        const raw = localStorage.getItem('ratin_ui_state');
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        currentManagerFilter = state.managerFilter || 'ALL_BILLS';
+        selectedUserDateFilter = state.selectedDate || null;
+
+        const step1 = document.getElementById('billStep1');
+        const step2 = document.getElementById('billStep2');
+        if (state.billingStep === 2 && step1 && step2) {
+          step1.classList.add('hidden');
+          step2.classList.remove('hidden');
+        }
+        if (typeof state.scrollY === 'number') {
+          requestAnimationFrame(() => window.scrollTo(0, state.scrollY));
+        }
+      } catch (e) {}
+    }
+
+    window.addEventListener('beforeunload', saveUiState);
+
     function checkSession() {
-      const session = JSON.parse(localStorage.getItem('ratin_session'));
-      if (session) {
-        const users = getUsersArray();
-        const activeUser = users.find(u => u.username.toLowerCase() === session.username.toLowerCase());
-        if (activeUser) {
-          localStorage.setItem('ratin_session', JSON.stringify(activeUser));
-        }
-
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('appDashboard').classList.remove('hidden');
-        document.getElementById('navRight').classList.remove('hidden');
-        document.getElementById('userInfoText').innerText = `${session.username} (${session.role.toUpperCase()})`;
-
-        const step1Date = document.getElementById('billDate');
-        const step1Notice = document.getElementById('step1RoleNotice');
-        const backStep1Btn = document.getElementById('backToStep1Btn');
-
-        // Back button stays available for ALL users
-        if (backStep1Btn) backStep1Btn.classList.remove('hidden');
-
-        if (session.role === 'manager' || session.role === 'admin') {
-          step1Date.removeAttribute('disabled');
-          step1Notice.innerText = "Manager Plan Enabled";
-          step1Notice.className = "status-badge status-approved";
-        } else {
-          step1Date.setAttribute('disabled', 'disabled');
-          step1Notice.innerText = "User Plan (Auto Locked Date)";
-          step1Notice.className = "status-badge status-pending";
-        }
-
-        if (session.role === 'admin') {
-          document.getElementById('topBanner').classList.add('hidden');
-          document.getElementById('adminPanel').classList.remove('hidden');
-          document.getElementById('userBillingPanel').classList.add('hidden');
-          document.getElementById('billingRecordsCard').classList.add('hidden');
-          document.getElementById('managerPermCard').classList.add('hidden');
-          renderAdminUsers();
-        } else if (session.role === 'manager') {
-          document.getElementById('topBanner').classList.remove('hidden');
-          document.getElementById('adminPanel').classList.add('hidden');
-          document.getElementById('userBillingPanel').classList.remove('hidden');
-          document.getElementById('billingRecordsCard').classList.remove('hidden');
-          document.getElementById('managerPermCard').classList.remove('hidden');
-        } else {
-          document.getElementById('topBanner').classList.remove('hidden');
-          document.getElementById('adminPanel').classList.add('hidden');
-          document.getElementById('userBillingPanel').classList.remove('hidden');
-          document.getElementById('billingRecordsCard').classList.remove('hidden');
-          document.getElementById('managerPermCard').classList.add('hidden');
-        }
-
-        renderDashboard();
-        startAutoLogoutTimer();
-      } else {
-        stopAutoLogoutTimer();
-        document.getElementById('authSection').classList.remove('hidden');
-        document.getElementById('appDashboard').classList.add('hidden');
-        document.getElementById('navRight').classList.add('hidden');
+      let savedSession = null;
+      try {
+        savedSession = JSON.parse(localStorage.getItem('ratin_session'));
+      } catch (e) {
+        localStorage.removeItem('ratin_session');
       }
+
+      // A session is valid only when the same user exists in LIVE Firebase data.
+      // Never trust a locally stored role/status/password.
+      if (savedSession && savedSession.username) {
+        const users = getUsersArray();
+        const activeUser = users.find(u =>
+          u && typeof u.username === 'string' &&
+          u.username.toLowerCase() === String(savedSession.username).toLowerCase()
+        );
+
+        if (activeUser &&
+            activeUser.status === 'Approved' &&
+            activeUser.activeState !== 'Inactive') {
+
+          const session = { ...activeUser };
+          localStorage.setItem('ratin_session', JSON.stringify(session));
+
+          document.getElementById('authSection').classList.add('hidden');
+          document.getElementById('appDashboard').classList.remove('hidden');
+          document.getElementById('navRight').classList.remove('hidden');
+          document.getElementById('userInfoText').innerText =
+            `${session.username} (${session.role.toUpperCase()})`;
+
+          const step1Notice = document.getElementById('step1RoleNotice');
+          const backStep1Btn = document.getElementById('backToStep1Btn');
+          if (backStep1Btn) backStep1Btn.classList.remove('hidden');
+
+          if (session.role === 'manager' || session.role === 'admin') {
+            step1Notice.innerText = "Manager Plan Enabled";
+            step1Notice.className = "status-badge status-approved";
+          } else if (session.role === 'audit') {
+            step1Notice.innerText = "Audit Billing Enabled";
+            step1Notice.className = "status-badge status-approved";
+          } else {
+            step1Notice.innerText = "User Plan (Auto Locked Date)";
+            step1Notice.className = "status-badge status-pending";
+          }
+
+          checkAndToggleDateLock(document.getElementById('billDate').value);
+
+          if (session.role === 'admin') {
+            document.getElementById('topBanner').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('userBillingPanel').classList.add('hidden');
+            document.getElementById('billingRecordsCard').classList.remove('hidden');
+            document.getElementById('managerPermCard').classList.add('hidden');
+            document.getElementById('accountsSearchPanel').classList.add('hidden');
+            renderAdminUsers();
+          } else if (session.role === 'manager') {
+            document.getElementById('topBanner').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('userBillingPanel').classList.remove('hidden');
+            document.getElementById('billingRecordsCard').classList.remove('hidden');
+            document.getElementById('managerPermCard').classList.remove('hidden');
+            document.getElementById('accountsSearchPanel').classList.add('hidden');
+          } else if (session.role === 'accounts') {
+            document.getElementById('topBanner').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('userBillingPanel').classList.remove('hidden');
+            document.getElementById('billingRecordsCard').classList.remove('hidden');
+            document.getElementById('managerPermCard').classList.add('hidden');
+            document.getElementById('accountsSearchPanel').classList.remove('hidden');
+          } else if (session.role === 'audit') {
+            document.getElementById('topBanner').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('userBillingPanel').classList.remove('hidden');
+            document.getElementById('billingRecordsCard').classList.remove('hidden');
+            document.getElementById('managerPermCard').classList.add('hidden');
+            document.getElementById('accountsSearchPanel').classList.add('hidden');
+          } else {
+            document.getElementById('topBanner').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('userBillingPanel').classList.remove('hidden');
+            document.getElementById('billingRecordsCard').classList.remove('hidden');
+            document.getElementById('managerPermCard').classList.add('hidden');
+            document.getElementById('accountsSearchPanel').classList.add('hidden');
+          }
+
+          renderDashboard();
+          restoreUiState();
+          startAutoLogoutTimer();
+          return;
+        }
+
+        // Invalid, tampered, deleted, pending or inactive session: force login.
+        localStorage.removeItem('ratin_session');
+      }
+
+      stopAutoLogoutTimer();
+      document.getElementById('authSection').classList.remove('hidden');
+      document.getElementById('appDashboard').classList.add('hidden');
+      document.getElementById('navRight').classList.add('hidden');
     }
 
     function logout() {
@@ -1202,7 +1750,7 @@
       }
 
       if (user.role !== 'user') {
-        alert('Selected user is a Manager or Admin. Permissions apply to regular Users only.');
+        alert('Selected user is not a regular User. Permissions apply to regular Users only.');
         document.getElementById('permFoundUserCard').classList.add('hidden');
         selectedBackdateUser = null;
         return;
@@ -1292,7 +1840,7 @@
         phone,
         password, 
         role, 
-        designation: role === 'manager' ? 'Manager' : 'User',
+        designation: role.toUpperCase(),
         status: 'Approved', 
         activeState: 'Active' 
       };
@@ -1302,7 +1850,7 @@
         document.getElementById('admNewEmail').value = '';
         document.getElementById('admNewPhone').value = '';
         document.getElementById('admNewPass').value = '';
-        alert('New user created successfully!');
+        alert(`New ${role} account created successfully!`);
       });
     }
 
@@ -1320,7 +1868,7 @@
           <td>${u.email}</td>
           <td>${u.phone || 'N/A'}</td>
           <td>${u.designation || 'N/A'}</td>
-          <td>${u.role}</td>
+          <td><span class="status-badge status-audit">${u.role}</span></td>
           <td><span class="status-badge ${u.status === 'Approved' ? 'status-approved' : 'status-pending'}">${u.status}</span></td>
           <td><span class="status-badge ${u.activeState === 'Active' ? 'status-approved' : 'status-inactive'}">${u.activeState || 'Active'}</span></td>
           <td>
@@ -1422,18 +1970,23 @@
       filtered.forEach(bill => {
         let itemsHtml = '<ul style="list-style:none; padding:0;">';
         (bill.items || []).forEach((item, index) => {
-          itemsHtml += `<li style="font-size:0.85rem; margin-bottom:4px;">• ${index + 1}. ${item.desc} (${item.vehicle}): ${item.originalAmount} ${currency} ${item.cutAmount > 0 ? `<span style="color:var(--danger);">(Cut: -${item.cutAmount})</span>` : ''}</li>`;
+          const photoHtml = item.photo ? `<br><img src="${item.photo}" class="line-photo-thumb" onclick="openImagePreviewModal('${item.photo}')">` : '';
+          itemsHtml += `<li style="font-size:0.85rem; margin-bottom:4px;">• ${index + 1}. ${item.desc} (${item.vehicle}): ${item.originalAmount} ${currency} ${item.cutAmount > 0 ? `<span style="color:var(--danger);">(Cut: -${item.cutAmount})</span>` : ''}${photoHtml}</li>`;
         });
         itemsHtml += '</ul>';
 
+        const locationText = bill.division ? `<br><small style="color:#64748b;">📍 ${bill.division}, ${bill.district}, ${bill.thana}</small>` : '';
+
         const tr = document.createElement('tr');
+        if (isCutBill(bill)) tr.classList.add('cut-bill-row');
+        const billCutTotal = getBillCutTotal(bill);
         tr.innerHTML = `
           <td><span class="serial-tag">${bill.serialNo || 'N/A'}</span><br>${bill.date}</td>
-          <td><strong>${bill.projectName || 'General'}</strong><br><small>By: ${bill.user || bill.userId}</small></td>
+          <td><strong>${bill.projectName || 'General'}</strong>${locationText}<br><small>By: ${bill.user || bill.userId}</small></td>
           <td>${itemsHtml}</td>
           <td>${bill.receivedAmount || 0} ${currency}</td>
-          <td><strong>${bill.finalTotal} ${currency}</strong></td>
-          <td><span class="status-badge ${bill.status === 'Approved' ? 'status-approved' : bill.status === 'Rejected' ? 'status-rejected' : 'status-pending'}">${bill.status}</span></td>
+          <td><strong>${bill.finalTotal} ${currency}</strong>${billCutTotal > 0 ? `<br><span class="cut-amount-text">Cut: -${billCutTotal.toFixed(2)} ${currency}</span>` : ''}</td>
+          <td><span class="status-badge ${bill.status === 'Approved' ? 'status-approved' : bill.status === 'Rejected' ? 'status-rejected' : bill.status === 'Pending Audit' ? 'status-audit' : 'status-pending'}">${getFriendlyBillStatus(bill.status)}</span></td>
           <td>
             <button class="btn btn-warning" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="openEditBillModal('${bill.id}')">Edit</button>
             <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteBillByAdmin('${bill.id}')">Delete</button>
@@ -1522,6 +2075,9 @@
     function goToStep2() {
       const selectedDateStr = document.getElementById('billDate').value;
       const proj = document.getElementById('projectName').value.trim();
+      const div = document.getElementById('selectedDivision').value;
+      const dist = document.getElementById('selectedDistrict').value;
+      const thana = document.getElementById('selectedThana').value;
       const session = JSON.parse(localStorage.getItem('ratin_session'));
       const bills = getBillsArray();
 
@@ -1529,6 +2085,13 @@
         alert('Please fill in the date and project name!');
         return;
       }
+
+      if (!div || !dist || !thana) {
+        alert('Please select Division, District, and Thana / Upazila from pop-ups!');
+        return;
+      }
+
+      lockLocationSelection();
 
       const proceedToNext = () => {
         if (!editingBillId) {
@@ -1568,10 +2131,41 @@
       document.getElementById('billStep1').classList.remove('hidden');
     }
 
+    function handleLinePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const photoBase64 = e.target.result;
+          document.getElementById('linePhotoBase64').value = photoBase64;
+          document.getElementById('linePhotoPreview').src = photoBase64;
+          document.getElementById('linePhotoPreviewContainer').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function clearLinePhoto() {
+      document.getElementById('linePhoto').value = '';
+      document.getElementById('linePhotoBase64').value = '';
+      document.getElementById('linePhotoPreview').src = '';
+      document.getElementById('linePhotoPreviewContainer').classList.add('hidden');
+    }
+
+    function openImagePreviewModal(imgSrc) {
+      document.getElementById('fullImagePreview').src = imgSrc;
+      document.getElementById('imagePreviewModal').classList.remove('hidden');
+    }
+
+    function closeImagePreviewModal() {
+      document.getElementById('imagePreviewModal').classList.add('hidden');
+    }
+
     function saveLineItem() {
       const desc = document.getElementById('lineDesc').value.trim();
       const vehicle = document.getElementById('lineVehicle').value.trim();
       const amount = parseFloat(document.getElementById('lineAmount').value);
+      const photo = document.getElementById('linePhotoBase64').value || '';
 
       if (!desc || !vehicle || isNaN(amount) || amount <= 0) {
         alert('Please provide valid description and amount!');
@@ -1584,16 +2178,18 @@
           item.desc = desc;
           item.vehicle = vehicle;
           item.originalAmount = amount;
+          item.photo = photo;
         }
         editingLineId = null;
         document.getElementById('saveLineBtn').innerText = 'Add';
       } else {
-        tempLineItems.push({ id: Date.now(), desc, vehicle, originalAmount: amount, cutAmount: 0 });
+        tempLineItems.push({ id: Date.now(), desc, vehicle, originalAmount: amount, cutAmount: 0, photo: photo });
       }
 
       document.getElementById('lineDesc').value = '';
       document.getElementById('lineVehicle').value = '';
       document.getElementById('lineAmount').value = '';
+      clearLinePhoto();
       renderTempLines();
     }
 
@@ -1604,6 +2200,13 @@
         document.getElementById('lineDesc').value = item.desc;
         document.getElementById('lineVehicle').value = item.vehicle;
         document.getElementById('lineAmount').value = item.originalAmount;
+        if (item.photo) {
+          document.getElementById('linePhotoBase64').value = item.photo;
+          document.getElementById('linePhotoPreview').src = item.photo;
+          document.getElementById('linePhotoPreviewContainer').classList.remove('hidden');
+        } else {
+          clearLinePhoto();
+        }
         document.getElementById('saveLineBtn').innerText = 'Update';
       }
     }
@@ -1620,11 +2223,16 @@
 
       tempLineItems.forEach((item, idx) => {
         const tr = document.createElement('tr');
+        const photoTd = item.photo 
+          ? `<img src="${item.photo}" class="line-photo-thumb" onclick="openImagePreviewModal('${item.photo}')">` 
+          : '<span style="color:#94a3b8; font-size:0.8rem;">No Photo</span>';
+
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td>${item.desc}</td>
           <td>${item.vehicle}</td>
           <td>${item.originalAmount} ${currency}</td>
+          <td>${photoTd}</td>
           <td>
             <button class="btn btn-warning" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editTempLine(${item.id})">Edit</button>
             <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="removeTempLine(${item.id})">Delete</button>
@@ -1655,6 +2263,9 @@
       const session = JSON.parse(localStorage.getItem('ratin_session'));
       const date = document.getElementById('billDate').value;
       const projectName = document.getElementById('projectName').value.trim();
+      const division = document.getElementById('selectedDivision').value;
+      const district = document.getElementById('selectedDistrict').value;
+      const thana = document.getElementById('selectedThana').value;
       const receivedAmount = parseFloat(document.getElementById('receivedAmount').value) || 0;
 
       const saveBillToFirebase = (serialNo) => {
@@ -1669,19 +2280,35 @@
           role: session.role,
           date: date,
           projectName: projectName,
+          division: division,
+          district: district,
+          thana: thana,
           items: tempLineItems,
           totalOriginal: totalOriginal,
           finalTotal: totalOriginal,
           receivedAmount: receivedAmount,
-          status: 'Pending'
+          managerCut: 0,
+          managerReason: '',
+          auditCut: 0,
+          auditReason: '',
+          status: 'Pending Manager'
         };
 
         database.ref('bills/' + billId).set(newBill).then(() => {
+          const permId = `${session.username}_${date}`;
+          database.ref('backdate_permissions/' + permId).remove();
+
           tempLineItems = [];
           editingBillId = null;
           renderTempLines();
           document.getElementById('projectName').value = '';
           document.getElementById('receivedAmount').value = '0';
+          
+          unlockLocationSelection();
+          document.getElementById('selectedDivision').value = '';
+          document.getElementById('selectedDistrict').value = '';
+          document.getElementById('selectedThana').value = '';
+
           goToStep1();
           alert(`Bill submitted successfully!\nBill Number: ${serialNo}`);
         });
@@ -1712,121 +2339,397 @@
       renderDashboard();
     }
 
+    // =========================
+    // APPROVAL WORKFLOW
+    // Manager -> Audit -> Completed
+    // Per-line cuts. Reason is optional. Only Manager can reject.
+    // =========================
+    function collectLineCuts(bill, stage) {
+      const updatedItems = (bill.items || []).map((item, index) => {
+        const original = Number(item.originalAmount || 0);
+        const existingMgr = Number(item.managerCut || 0);
+        const existingAud = Number(item.auditCut || 0);
+        const id = stage === 'manager' ? `mgr_cut_${bill.id}_${index}` : `aud_cut_${bill.id}_${index}`;
+        const reasonId = stage === 'manager' ? `mgr_reason_${bill.id}_${index}` : `aud_reason_${bill.id}_${index}`;
+        const cutEl = document.getElementById(id);
+        const reasonEl = document.getElementById(reasonId);
+        let cut = Number(cutEl?.value || 0);
+        const reason = (reasonEl?.value || '').trim();
+        if (!Number.isFinite(cut) || cut < 0) cut = 0;
+        const max = stage === 'manager' ? Math.max(0, original) : Math.max(0, original - existingMgr);
+        if (cut > max) throw new Error(`Line ${index + 1}: cut cannot exceed ${max.toFixed(2)}.`);
+        if (stage === 'manager') {
+          return {...item, managerCut: cut, managerReason: reason};
+        }
+        return {...item, auditCut: cut, auditReason: reason};
+      });
+      return updatedItems;
+    }
+
+    function recalculateBillTotals(bill) {
+      let totalOriginal = 0, managerCut = 0, auditCut = 0, finalTotal = 0;
+      (bill.items || []).forEach(item => {
+        const original = Number(item.originalAmount || 0);
+        const mgr = Math.min(Math.max(Number(item.managerCut || 0), 0), original);
+        const aud = Math.min(Math.max(Number(item.auditCut || 0), 0), Math.max(0, original - mgr));
+        item.managerCut = mgr;
+        item.auditCut = aud;
+        totalOriginal += original;
+        managerCut += mgr;
+        auditCut += aud;
+        finalTotal += Math.max(0, original - mgr - aud);
+      });
+      bill.totalOriginal = totalOriginal;
+      bill.managerCut = managerCut;
+      bill.auditCut = auditCut;
+      bill.finalTotal = finalTotal;
+      return bill;
+    }
+
+    function passManagerBill(billId) {
+      const bill = getBillsArray().find(b => b.id == billId);
+      if (!bill || bill.status !== 'Pending Manager') return;
+      try {
+        bill.items = collectLineCuts(bill, 'manager');
+        // Clear any stale audit cuts when Manager is processing a fresh bill.
+        bill.items.forEach(item => { item.auditCut = 0; item.auditReason = ''; });
+        recalculateBillTotals(bill);
+        bill.status = 'Pending Audit';
+        const session = JSON.parse(localStorage.getItem('ratin_session')) || {};
+        bill.managerApprovedBy = session.username || '';
+        bill.managerApprovedAt = Date.now();
+        database.ref('bills/' + billId).set(bill).then(() => {
+          alert('Bill approved by Manager and sent to Audit.');
+          renderDashboard();
+        });
+      } catch (e) { alert(e.message); }
+    }
+
+    function passAuditBill(billId) {
+      const bill = getBillsArray().find(b => b.id == billId);
+      if (!bill || bill.status !== 'Pending Audit') return;
+      try {
+        bill.items = collectLineCuts(bill, 'audit');
+        recalculateBillTotals(bill);
+        bill.status = 'Approved';
+        const session = JSON.parse(localStorage.getItem('ratin_session')) || {};
+        bill.auditApprovedBy = session.username || '';
+        bill.auditApprovedAt = Date.now();
+        database.ref('bills/' + billId).set(bill).then(() => {
+          alert('Final Audit approval completed. Bill is now Approved.');
+          renderDashboard();
+        });
+      } catch (e) { alert(e.message); }
+    }
+
+    function rejectManagerBill(billId) {
+      const bill = getBillsArray().find(b => b.id == billId);
+      if (!bill || bill.status !== 'Pending Manager') return;
+      const session = JSON.parse(localStorage.getItem('ratin_session')) || {};
+      database.ref('bills/' + billId).update({
+        status: 'Rejected',
+        rejectionStage: 'Manager',
+        rejectionReason: '',
+        rejectedBy: session.username || '',
+        rejectedAt: Date.now()
+      }).then(() => {
+        alert('Bill rejected by Manager.');
+        renderDashboard();
+      });
+    }
+
+    function getFriendlyBillStatus(status) {
+      const map = {
+        'Pending Manager': '🟡 Pending Manager Approval',
+        'Pending Audit': '🔵 Passed by Manager / Pending Audit',
+        'Approved': '🟢 Audit Approved / Completed',
+        'Rejected': '🔴 Rejected'
+      };
+      return map[status] || status || 'Unknown';
+    }
+
+    function editRejectedBill(billId) {
+      const bills = getBillsArray();
+      const bill = bills.find(b => b.id == billId);
+      if (!bill) return;
+
+      editingBillId = bill.id;
+      document.getElementById('billDate').value = bill.date;
+      document.getElementById('projectName').value = bill.projectName || '';
+      document.getElementById('selectedDivision').value = bill.division || '';
+      document.getElementById('selectedDistrict').value = bill.district || '';
+      document.getElementById('selectedThana').value = bill.thana || '';
+      document.getElementById('receivedAmount').value = bill.receivedAmount || 0;
+
+      tempLineItems = (bill.items || []).map(item => ({
+        id: item.id || Date.now() + Math.random(),
+        desc: item.desc,
+        vehicle: item.vehicle,
+        originalAmount: item.originalAmount,
+        cutAmount: 0,
+        photo: item.photo || ''
+      }));
+
+      renderTempLines();
+      goToStep2();
+    }
+
     function renderDashboard() {
       const session = JSON.parse(localStorage.getItem('ratin_session'));
       if (!session) return;
-
       const bills = getBillsArray();
       const tbody = document.getElementById('userBillsTableBody');
       if (!tbody) return;
-      tbody.innerHTML = '';
+      const currency = globalSettings.currency || 'BDT';
+
+      // User summary
+      const ownBills = bills.filter(b => b.user === session.username || b.userId === session.username);
+      const approvedOwn = ownBills.filter(b => b.status === 'Approved');
+      const totalCostSum = approvedOwn.reduce((s,b)=>s+Number(b.finalTotal||0),0);
+      const totalReceivedSum = approvedOwn.reduce((s,b)=>s+Number(b.receivedAmount||0),0);
+      const totalCutSum = approvedOwn.reduce((s,b)=>s+Number(b.managerCut||0)+Number(b.auditCut||0),0);
+      const netDue = Math.max(0,totalCostSum-totalReceivedSum);
+      const excessReceived = Math.max(0,totalReceivedSum-totalCostSum);
+      const bc=document.getElementById('bannerTotalCost'); if(bc) bc.innerHTML=`${totalCostSum.toFixed(2)} ${currency} <span class="cut-tag">(${totalCutSum.toFixed(2)} ${currency} cut)</span>`;
+      const br=document.getElementById('bannerReceived'); if(br) br.innerHTML=`${totalReceivedSum.toFixed(2)} ${currency} <span class="excess-tag">(${excessReceived.toFixed(2)} ${currency})</span>`;
+      const bd=document.getElementById('bannerDue'); if(bd) bd.innerText=`${netDue.toFixed(2)} ${currency}`;
+
+      const controls=document.getElementById('managerControls');
+      const roleText=document.getElementById('billingPanelRoleText');
+      const badge=document.getElementById('billingWorkflowBadge');
+      const pendingBtn=document.getElementById('pendingBillsBtn');
+      // These 4 workflow filters are ONLY for Manager and Audit roles.
+      // Normal Users must never see All Bills / My Bills / User Bills / Pending Bills.
+      if (controls) {
+        const canUseManagerControls = session.role === 'manager' || session.role === 'audit';
+        controls.classList.toggle('hidden', !canUseManagerControls);
+      }
+      if (session.role==='manager') {
+        if(roleText) roleText.innerText = 'Manager Panel • Check, Cut, Approve & Send to Audit';
+        if(badge){badge.classList.remove('hidden'); badge.innerText='Manager Approval';}
+        if(pendingBtn) pendingBtn.innerText='⏳ Pending Bills';
+      } else if (session.role==='audit') {
+        if(roleText) roleText.innerText = 'Audit Panel • Check, Cut & Final Approve';
+        if(badge){badge.classList.remove('hidden'); badge.innerText='Final Audit';}
+        if(pendingBtn) pendingBtn.innerText='⏳ Pending Audit';
+      } else {
+        if(roleText) roleText.innerText = 'Billing Records & Status • Search by Date';
+        if(badge) badge.classList.add('hidden');
+        if(pendingBtn) pendingBtn.innerText='⏳ Pending Bills';
+      }
+
+      let displayedBills=[];
+      if(session.role==='manager' || session.role==='audit' || session.role==='admin'){
+        if(currentManagerFilter==='MY_BILLS') {
+          displayedBills=bills.filter(b=>b.user===session.username||b.userId===session.username);
+        } else if(currentManagerFilter==='USER_BILLS') {
+          displayedBills=bills.filter(b=>b.role==='user');
+        } else if(currentManagerFilter==='PENDING_BILLS') {
+          if (session.role==='manager') displayedBills=bills.filter(b=>b.status==='Pending Manager');
+          else if (session.role==='audit') displayedBills=bills.filter(b=>b.status==='Pending Audit');
+          else displayedBills=bills.filter(b=>b.status==='Pending Manager' || b.status==='Pending Audit');
+        } else {
+          // Audit sees bills that have entered/finished audit; Manager/Admin see all.
+          displayedBills=session.role==='audit'
+            ? bills.filter(b=>b.status!=='Pending Manager')
+            : bills.slice();
+        }
+        // Date is ONLY a filter. Empty date means show the current role's records.
+        if(selectedUserDateFilter) displayedBills=displayedBills.filter(b=>b.date===selectedUserDateFilter);
+      } else {
+        // Other users can search their own records by date.
+        displayedBills=bills.filter(b=>(b.user===session.username||b.userId===session.username) && (!selectedUserDateFilter || b.date===selectedUserDateFilter));
+      }
+
+      if(!displayedBills.length){
+        tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:#64748b;padding:1.5rem;">No bill records found${selectedUserDateFilter?` for ${selectedUserDateFilter}`:''}.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML='';
+      displayedBills.forEach(bill=>{
+        const tr=document.createElement('tr');
+        if (isCutBill(bill)) tr.classList.add('cut-bill-row');
+        let itemsHtml='<div style="display:flex;flex-direction:column;gap:8px;">';
+        (bill.items||[]).forEach((item,index)=>{
+          const original=Number(item.originalAmount||0);
+          const mgrCut=Number(item.managerCut||0);
+          const audCut=Number(item.auditCut||0);
+          const net=Math.max(0,original-mgrCut-audCut);
+          const photoHtml=item.photo?`<br><img src="${item.photo}" class="line-photo-thumb" onclick="openImagePreviewModal('${item.photo}')">`:'';
+          let editHtml='';
+          if(session.role==='manager' && bill.status==='Pending Manager'){
+            editHtml=`<div style="display:grid;grid-template-columns:120px minmax(150px,1fr);gap:6px;margin-top:7px;">
+              <input type="number" min="0" max="${original}" step="0.01" id="mgr_cut_${bill.id}_${index}" placeholder="Cut Amount">
+              <input type="text" id="mgr_reason_${bill.id}_${index}" placeholder="Reason (Optional)">
+            </div>`;
+          } else if(session.role==='audit' && bill.status==='Pending Audit'){
+            const maxAudit=Math.max(0,original-mgrCut);
+            editHtml=`<div style="display:grid;grid-template-columns:120px minmax(150px,1fr);gap:6px;margin-top:7px;">
+              <input type="number" min="0" max="${maxAudit}" step="0.01" id="aud_cut_${bill.id}_${index}" placeholder="Audit Cut Amount">
+              <input type="text" id="aud_reason_${bill.id}_${index}" placeholder="Reason (Optional)">
+            </div>`;
+          }
+          itemsHtml+=`<div style="border:1px solid #e2e8f0;border-radius:8px;padding:9px;background:#f8fafc;">
+            <div><strong>${index+1}. ${item.desc||'Item'}</strong>${item.vehicle?` (${item.vehicle})`:''}</div>
+            <div style="font-size:.82rem;margin-top:3px;">Original: <b>${original.toFixed(2)} ${currency}</b> | Manager Cut: <b>${mgrCut.toFixed(2)}</b> | Audit Cut: <b>${audCut.toFixed(2)}</b> | Net: <b>${net.toFixed(2)} ${currency}</b></div>
+            ${item.managerReason?`<div style="font-size:.78rem;color:#b45309;">Manager Reason: ${item.managerReason}</div>`:''}
+            ${item.auditReason?`<div style="font-size:.78rem;color:#b45309;">Audit Reason: ${item.auditReason}</div>`:''}
+            ${photoHtml}${editHtml}
+          </div>`;
+        });
+        itemsHtml+='</div>';
+
+        const statusClass=bill.status==='Pending Audit'?'status-audit':bill.status==='Approved'?'status-approved':bill.status==='Rejected'?'status-rejected':'status-pending';
+        let actions='N/A';
+        if(session.role==='manager' && bill.status==='Pending Manager'){
+          actions=`<div style="display:flex;flex-direction:column;gap:5px;">
+            <button class="btn btn-success" style="padding:.35rem .6rem;" onclick="passManagerBill(${bill.id})">Approve & Send to Audit</button>
+            <button class="btn btn-danger" style="padding:.35rem .6rem;" onclick="rejectManagerBill(${bill.id})">Reject</button>
+          </div>`;
+        } else if(session.role==='audit' && bill.status==='Pending Audit'){
+          actions=`<button class="btn btn-success" style="padding:.35rem .6rem;" onclick="passAuditBill(${bill.id})">Final Approve</button>`;
+        } else if((bill.user===session.username||bill.userId===session.username)&&bill.status==='Rejected'){
+          actions=`<button class="btn btn-warning" style="padding:.25rem .5rem;" onclick="editRejectedBill(${bill.id})">Resubmit</button>`;
+        }
+        if(bill.status==='Approved') actions+=` <button class="btn btn-primary" style="padding:.25rem .5rem;font-size:.8rem;" onclick="autoDownloadSingleBillPDF('${bill.id}')">Download PDF 📄</button>`;
+
+        const locationDisplay=bill.division?`<br><small style="color:#64748b;">📍 ${bill.division}, ${bill.district}, ${bill.thana}</small>`:'';
+        const billCutTotal = getBillCutTotal(bill);
+        tr.innerHTML=`<td><span class="serial-tag">${bill.serialNo||'N/A'}</span><br>${bill.date}</td>
+          <td><strong>${bill.projectName||'General'}</strong>${locationDisplay}<br><small>By: ${bill.user||bill.userId}</small></td>
+          <td>${itemsHtml}<hr style="margin:6px 0;"><div style="font-size:.8rem;"><b>Original:</b> ${Number(bill.totalOriginal||0).toFixed(2)} ${currency} | <b>Manager Cut:</b> -${Number(bill.managerCut||0).toFixed(2)} | <b>Audit Cut:</b> -${Number(bill.auditCut||0).toFixed(2)} | <b>Final:</b> ${Number(bill.finalTotal||0).toFixed(2)} ${currency}</div></td>
+          <td>${Number(bill.receivedAmount||0).toFixed(2)} ${currency}</td>
+          <td><strong>${Number(bill.finalTotal||0).toFixed(2)} ${currency}</strong>${billCutTotal > 0 ? `<br><span class="cut-amount-text">Cut: -${billCutTotal.toFixed(2)} ${currency}</span>` : ''}</td>
+          <td><span class="status-badge ${statusClass}">${getFriendlyBillStatus(bill.status)}</span></td>
+          <td>${actions}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ACCOUNTS SEARCH
+    function searchUserSummaryForAccounts() {
+      const input = document.getElementById('accSearchUserId');
+      const q = input.value.trim().toLowerCase();
+      const resultBox = document.getElementById('accUserSummaryResult');
+      if (!q) {
+        resultBox.classList.add('hidden');
+        alert('Please enter a User ID / Username');
+        return;
+      }
+
+      // Search every person who has actually submitted a bill.
+      // A submitter can be a User, Manager, Audit, Accounts, etc. The Accounts
+      // search must not restrict results to role === 'user'. A wrong name/ID
+      // that has no submitted bill will show an error popup.
+      const allBills = getBillsArray();
+      const submittedMatches = allBills.filter(b => {
+        const billUser = String(b.user || '').trim().toLowerCase();
+        const billUserId = String(b.userId || '').trim().toLowerCase();
+        return billUser === q || billUserId === q;
+      });
+
+      if (submittedMatches.length === 0) {
+        resultBox.classList.add('hidden');
+        alert('User not found. No submitted bill exists for this name / ID.');
+        input.focus();
+        return;
+      }
+
+      // Use the exact submitter identity stored on the bill. This allows all
+      // bill submitters to appear, regardless of their account role.
+      const matchedUsername = String(submittedMatches[0].user || '').trim().toLowerCase();
+      const matchedUserId = String(submittedMatches[0].userId || '').trim().toLowerCase();
+      const currency = globalSettings.currency || 'BDT';
+      const userBills = allBills.filter(b => {
+        const billUser = String(b.user || '').trim().toLowerCase();
+        const billUserId = String(b.userId || '').trim().toLowerCase();
+        return (matchedUsername && billUser === matchedUsername) ||
+               (matchedUserId && billUserId === matchedUserId);
+      });
 
       let totalCostSum = 0;
       let totalReceivedSum = 0;
       let totalCutSum = 0;
 
-      const currency = globalSettings.currency || 'BDT';
-      const bannerBills = bills.filter(b => (b.user === session.username || b.userId === session.username));
-
-      bannerBills.forEach(bill => {
+      userBills.forEach(bill => {
         if (bill.status === 'Approved') {
           totalCostSum += (bill.finalTotal || 0);
           totalReceivedSum += (bill.receivedAmount || 0);
-
-          (bill.items || []).forEach(item => {
-            totalCutSum += (item.cutAmount || 0);
-          });
+          totalCutSum += ((bill.managerCut || 0) + (bill.auditCut || 0));
         }
       });
 
       let netDue = Math.max(0, totalCostSum - totalReceivedSum);
       let excessReceived = Math.max(0, totalReceivedSum - totalCostSum);
 
-      document.getElementById('bannerTotalCost').innerHTML = `${totalCostSum} ${currency} <span class="cut-tag">(${totalCutSum} ${currency})</span>`;
-      document.getElementById('bannerReceived').innerHTML = `${totalReceivedSum} ${currency} <span class="excess-tag">(${excessReceived} ${currency})</span>`;
-      document.getElementById('bannerDue').innerText = `${netDue} ${currency}`;
+      document.getElementById('accResCost').innerHTML = `${totalCostSum} ${currency} <span class="cut-tag">(${totalCutSum} ${currency})</span>`;
+      document.getElementById('accResReceived').innerHTML = `${totalReceivedSum} ${currency} <span class="excess-tag">(${excessReceived} ${currency})</span>`;
+      document.getElementById('accResDue').innerText = `${netDue} ${currency}`;
 
-      const managerControls = document.getElementById('managerControls');
-      let displayedBills = [];
-
-      if (session.role === 'manager') {
-        if (managerControls) managerControls.classList.remove('hidden');
-        if (currentManagerFilter === 'MY_BILLS') {
-          displayedBills = bills.filter(b => b.user === session.username || b.userId === session.username);
-        } else if (currentManagerFilter === 'USER_BILLS') {
-          displayedBills = bills.filter(b => b.role === 'user');
-        } else if (currentManagerFilter === 'PENDING_BILLS') {
-          displayedBills = bills.filter(b => b.status === 'Pending');
-        } else {
-          displayedBills = bills;
-        }
-
-        if (selectedUserDateFilter) {
-          displayedBills = displayedBills.filter(b => b.date === selectedUserDateFilter);
-        }
-      } else {
-        if (managerControls) managerControls.classList.add('hidden');
-        if (selectedUserDateFilter) {
-          displayedBills = bills.filter(b => (b.user === session.username || b.userId === session.username) && b.date === selectedUserDateFilter);
-        } else {
-          displayedBills = bills.filter(b => b.user === session.username || b.userId === session.username);
-        }
-      }
-
-      if (displayedBills.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:1.5rem;">No bill records found.</td></tr>`;
-        return;
-      }
-
-      displayedBills.forEach(bill => {
-        const tr = document.createElement('tr');
-        
-        let itemsHtml = '<ul style="list-style:none; padding:0;">';
-        (bill.items || []).forEach((item, index) => {
-          const itemNet = item.originalAmount - (item.cutAmount || 0);
-          itemsHtml += `<li style="margin-bottom:6px; font-size:0.85rem;">
-            <strong>• ${index + 1}. ${item.desc}</strong> (${item.vehicle}): ${item.originalAmount} ${currency}`;
-          
-          if (session.role === 'manager' && bill.status === 'Pending') {
-            itemsHtml += ` | Cut: <input type="number" id="cut_${bill.id}_${index}" style="width:70px; padding:2px;" placeholder="0" value="${item.cutAmount || 0}"> ${currency}`;
-          } else if (item.cutAmount > 0) {
-            itemsHtml += ` <span style="color:var(--danger);">(Cut: -${item.cutAmount} ${currency} = ${itemNet} ${currency})</span>`;
-          }
-          itemsHtml += `</li>`;
-        });
-        itemsHtml += '</ul>';
-
-        let statusClass = 'status-pending';
-        if (bill.status === 'Approved') statusClass = 'status-approved';
-        if (bill.status === 'Rejected') statusClass = 'status-rejected';
-
-        let actionBtns = '';
-        if (session.role === 'manager' && bill.status === 'Pending') {
-          actionBtns += `<button class="btn btn-success" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="passManagerBill(${bill.id})">Approve Bill</button> `;
-          actionBtns += `<button class="btn btn-danger" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="rejectManagerBill(${bill.id})">Reject</button>`;
-        } else if ((bill.user === session.username || bill.userId === session.username) && bill.status === 'Rejected') {
-          actionBtns += `<button class="btn btn-warning" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="editRejectedBill(${bill.id})">Resubmit</button>`;
-        }
-        
-        if (bill.status === 'Approved') {
-          actionBtns += ` <button class="btn btn-primary" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="autoDownloadSingleBillPDF('${bill.id}')">Download PDF 📄</button>`;
-        }
-
-        if(!actionBtns) actionBtns = 'N/A';
-
-        tr.innerHTML = `
-          <td><span class="serial-tag">${bill.serialNo || 'N/A'}</span><br>${bill.date}</td>
-          <td><strong>${bill.projectName || 'General'}</strong><br><small>By: ${bill.user || bill.userId}</small></td>
-          <td>${itemsHtml}</td>
-          <td>${bill.receivedAmount || 0} ${currency}</td>
-          <td><strong>${bill.finalTotal} ${currency}</strong></td>
-          <td><span class="status-badge ${statusClass}">${bill.status}</span></td>
-          <td>${actionBtns}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+      document.getElementById('accUserSummaryResult').classList.remove('hidden');
     }
 
+    function getBillCutTotal(bill) {
+      if (!bill) return 0;
+
+      // IMPORTANT: bill.managerCut / bill.auditCut are already the totals
+      // calculated from all line items. Do NOT add the line-item cuts again,
+      // otherwise the displayed Cut amount becomes double-counted.
+      const managerCut = Number(bill.managerCut || 0);
+      const auditCut = Number(bill.auditCut || 0);
+      const billLevelCut = managerCut + auditCut;
+
+      if (billLevelCut > 0) return billLevelCut;
+
+      // Fallback only for older records that do not have bill-level totals.
+      // Show ONLY Manager Cut + Audit Cut; never include legacy cutAmount.
+      return (bill.items || []).reduce((sum, item) => {
+        return sum + Number(item.managerCut || 0) + Number(item.auditCut || 0);
+      }, 0);
+    }
+
+    function isCutBill(bill) {
+      return getBillCutTotal(bill) > 0;
+    }
+
+    function searchTodayRequisition() {
+      const date = document.getElementById('accReqDate').value;
+      const userId = document.getElementById('accReqUserId').value.trim().toLowerCase();
+
+      if (!date) { alert('Please select Date'); return; }
+
+      let filtered = getBillsArray().filter(b => b.date === date && b.status === 'Approved');
+      if (userId) {
+        filtered = filtered.filter(b => b.user && b.user.toLowerCase() === userId || b.userId && b.userId.toLowerCase() === userId);
+      }
+
+      const tbody = document.getElementById('accReqTableBody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No passed/approved requisition bills found for specified date/user.</td></tr>`;
+      } else {
+        filtered.forEach(b => {
+          const tr = document.createElement('tr');
+          if (isCutBill(b)) tr.classList.add('cut-bill-row');
+          const cutTotal = getBillCutTotal(b);
+          tr.innerHTML = `
+            <td>${b.date} (${b.serialNo})</td>
+            <td><strong>${b.user || b.userId}</strong></td>
+            <td>${b.totalOriginal} BDT</td>
+            <td>${cutTotal > 0 ? `<strong class="cut-amount-text">-${cutTotal.toFixed(2)} BDT</strong>` : '<span>0 BDT</span>'}</td>
+            <td><strong>${b.finalTotal} BDT</strong></td>
+            <td>${b.receivedAmount} BDT</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('accReqResultTable').classList.remove('hidden');
+    }
+
+    // PDF GENERATOR
     function autoDownloadSingleBillPDF(billId) {
       const bills = getBillsArray();
       const bill = bills.find(b => b.id == billId);
@@ -1836,109 +2739,112 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
-      doc.setFontSize(20);
+      doc.setFontSize(22);
       doc.setTextColor(37, 99, 235);
-      doc.text("RATIN.BD", 105, 20, null, null, "center");
+      doc.text("RATIN.BD BILLING SYSTEM", 105, 18, { align: "center" });
 
       doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text("Official Billing Cash Memo", 105, 26, null, null, "center");
-
-      doc.setLineWidth(0.5);
-      doc.line(14, 30, 196, 30);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Official Verified Statement Voucher", 105, 25, { align: "center" });
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 28, 196, 28);
 
       doc.setFontSize(10);
-      doc.setTextColor(30);
-      doc.text(`Bill No: ${bill.serialNo || 'N/A'}`, 14, 38);
-      doc.text(`Project: ${bill.projectName || 'General'}`, 14, 44);
-      doc.text(`Date: ${bill.date}`, 140, 38);
-      doc.text(`User: ${bill.user || bill.userId}`, 140, 44);
+      doc.setTextColor(30, 41, 59);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text(`Bill Serial: ${bill.serialNo || 'N/A'}`, 14, 36);
+      doc.text(`Date: ${bill.date}`, 14, 42);
+      doc.text(`Project: ${bill.projectName || 'General'}`, 14, 48);
 
-      const tableData = (bill.items || []).map((item, index) => [
-        index + 1,
-        item.desc,
-        item.vehicle || '-',
-        `${item.originalAmount} ${currency}`,
-        `-${item.cutAmount || 0} ${currency}`,
-        `${Math.max(0, item.originalAmount - (item.cutAmount || 0))} ${currency}`
-      ]);
+      doc.text(`User / Billed By: ${bill.user || bill.userId}`, 120, 36);
+      const locText = bill.division ? `${bill.division}, ${bill.district}, ${bill.thana}` : 'N/A';
+      doc.text(`Location: ${locText}`, 120, 42);
+      doc.text(`Status: ${bill.status}`, 120, 48);
 
-      doc.autoTable({
-        startY: 50,
-        head: [['#', 'Description', 'Vehicle', 'Original', 'Deduction', 'Approved']],
-        body: tableData,
-        theme: 'striped',
-        headStyles: { fillColor: [37, 99, 235] }
+      const tableHeaders = [["#", "Description", "Vehicle / Type", `Original (${currency})`, `Net Approved (${currency})`]];
+      const tableRows = (bill.items || []).map((item, idx) => {
+        const orig = parseFloat(item.originalAmount) || 0;
+        return [
+          idx + 1,
+          item.desc || '',
+          item.vehicle || '-',
+          orig.toFixed(2),
+          orig.toFixed(2)
+        ];
       });
 
-      const finalY = doc.lastAutoTable.finalY + 10;
-      doc.setFontSize(10);
-      doc.text(`Total Bill: ${bill.totalOriginal || bill.finalTotal} ${currency}`, 140, finalY);
-      doc.text(`Received Amount: ${bill.receivedAmount || 0} ${currency}`, 140, finalY + 6);
-      doc.setFontSize(12);
-      doc.setTextColor(22, 163, 74);
-      doc.text(`Final Amount: ${bill.finalTotal} ${currency}`, 140, finalY + 14);
-
-      doc.save(`BILL_${bill.serialNo || bill.id}.pdf`);
-    }
-
-    function passManagerBill(billId) {
-      const bills = getBillsArray();
-      const bill = bills.find(b => b.id == billId);
-
-      if (bill) {
-        let newTotal = 0;
-        (bill.items || []).forEach((item, index) => {
-          const cutInput = document.getElementById(`cut_${billId}_${index}`);
-          const cutVal = cutInput ? (parseFloat(cutInput.value) || 0) : (item.cutAmount || 0);
-          item.cutAmount = cutVal;
-          newTotal += Math.max(0, item.originalAmount - cutVal);
-        });
-
-        bill.finalTotal = newTotal;
-        bill.status = 'Approved';
-        database.ref('bills/' + billId).set(bill).then(() => {
-          alert(`Bill ${bill.serialNo} approved!`);
-        });
-      }
-    }
-
-    function rejectManagerBill(billId) {
-      const bills = getBillsArray();
-      const bill = bills.find(b => b.id == billId);
-      if (bill) {
-        bill.status = 'Rejected';
-        database.ref('bills/' + billId).set(bill).then(() => {
-          alert(`Bill ${bill.serialNo} rejected!`);
-        });
-      }
-    }
-
-    function editRejectedBill(billId) {
-      const bills = getBillsArray();
-      const bill = bills.find(b => b.id == billId);
-      if (bill) {
-        editingBillId = bill.id;
-        document.getElementById('billDate').value = bill.date || '';
-        document.getElementById('projectName').value = bill.projectName || '';
-        document.getElementById('receivedAmount').value = bill.receivedAmount || 0;
-        tempLineItems = [...(bill.items || [])];
-        renderTempLines();
-        goToStep2();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-
-    // Init app execution
-    window.onload = function() {
-      initApp();
-
-      setTimeout(function() {
-        if (typeof hidePageLoader === 'function') {
-          hidePageLoader();
+      doc.autoTable({
+        startY: 55,
+        head: tableHeaders,
+        body: tableRows,
+        theme: 'grid',
+        headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center' },
+          1: { cellWidth: 70 },
+          2: { cellWidth: 40 },
+          3: { halign: 'right' },
+          4: { halign: 'right', fontStyle: 'bold' }
         }
-      }, 1000);
-    };
+      });
+
+      let finalY = doc.lastAutoTable.finalY + 10;
+
+      const origTotal = bill.totalOriginal || 0;
+      const mgrCut = bill.managerCut || 0;
+      const audCut = bill.auditCut || 0;
+      const received = parseFloat(bill.receivedAmount) || 0;
+      const netTotal = bill.finalTotal || (origTotal - mgrCut - audCut);
+      const balance = netTotal - received;
+
+      doc.setFillColor(248, 250, 252);
+      doc.rect(110, finalY, 86, 48, 'F');
+      doc.setDrawColor(203, 213, 225);
+      doc.rect(110, finalY, 86, 48, 'S');
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Subtotal Original:`, 114, finalY + 8);
+      doc.text(`${origTotal.toFixed(2)} ${currency}`, 192, finalY + 8, { align: "right" });
+
+      doc.text(`Manager Cut:`, 114, finalY + 15);
+      doc.text(`-${mgrCut.toFixed(2)} ${currency}`, 192, finalY + 15, { align: "right" });
+
+      doc.text(`Audit Cut:`, 114, finalY + 22);
+      doc.text(`-${audCut.toFixed(2)} ${currency}`, 192, finalY + 22, { align: "right" });
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`Approved Net Total:`, 114, finalY + 30);
+      doc.text(`${netTotal.toFixed(2)} ${currency}`, 192, finalY + 30, { align: "right" });
+
+      doc.setFont("helvetica", "normal");
+      doc.text(`Advance Received:`, 114, finalY + 37);
+      doc.text(`${received.toFixed(2)} ${currency}`, 192, finalY + 37, { align: "right" });
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(balance >= 0 ? 37 : 220, balance >= 0 ? 99 : 38, balance >= 0 ? 235 : 38);
+      doc.text(balance >= 0 ? `Net Due Payable:` : `Excess Received:`, 114, finalY + 44);
+      doc.text(`${Math.abs(balance).toFixed(2)} ${currency}`, 192, finalY + 44, { align: "right" });
+
+      doc.setTextColor(30, 41, 59);
+      const sigY = finalY + 65;
+      doc.setDrawColor(148, 163, 184);
+      
+      doc.line(20, sigY, 70, sigY);
+      doc.setFontSize(8);
+      doc.text("Applicant Signature", 45, sigY + 5, { align: "center" });
+
+      doc.line(130, sigY, 180, sigY);
+      doc.text("Authorized Approval", 155, sigY + 5, { align: "center" });
+
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text("Generated automatically via RATIN.BD Billing Pro Cloud Engine", 105, 285, { align: "center" });
+
+      doc.save(`${bill.serialNo || 'Bill'}_${bill.date}.pdf`);
+    }
   </script>
 </body>
 </html>
