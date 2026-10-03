@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>RATIN.BD Billing Pro</title>
   <style>
     :root {
@@ -175,6 +178,28 @@
       .manager-controls button { width: 100%; }
       .line-item-grid { grid-template-columns: 1fr !important; }
     }
+  
+    /* AUTH SUPPORT — SAME AS REFERENCE */
+    .auth-support-block {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8e5;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.65;
+      text-align: left;
+    }
+    .auth-support-block a {
+      color: #008f4c !important;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    #regSubmitBtn {
+      background: #008f4c !important;
+      color: #fff !important;
+    }
+
   </style>
 
   <!-- Firebase SDKs -->
@@ -208,7 +233,7 @@
     color: #dc2626 !important;
   }
 </style>
-</head>
+<style id="premium-v3">:root{--bg:#eef2f7;--ink:#182230;--line:#dbe3ee;--blue:#0f4c81;--cyan:#0891b2;--violet:#6d28d9;--green:#047857;--red:#dc2626;--amber:#b45309;--shadow:0 12px 32px rgba(15,23,42,.08)}html,body{background:linear-gradient(135deg,#f8fafc 0%,#eef2f7 100%)!important;color:var(--ink)!important}body{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important}.card,.panel,.section-card,.dashboard-card{border:1px solid var(--line)!important;border-radius:20px!important;background:rgba(255,255,255,.98)!important;box-shadow:var(--shadow)!important}.card:hover,.panel:hover,.section-card:hover,.dashboard-card:hover{box-shadow:0 18px 45px rgba(15,23,42,.12)!important;transform:translateY(-1px)}header,.topbar,.navbar,.app-header{background:linear-gradient(120deg,#0b2545,#0f4c81 55%,#164e63)!important;box-shadow:0 10px 30px rgba(11,37,69,.2)!important}button,.btn{border-radius:11px!important;font-weight:700!important}button:hover,.btn:hover{transform:translateY(-1px);filter:brightness(1.03);box-shadow:0 8px 18px rgba(15,76,129,.16)}input,select,textarea{border:1px solid #d5deea!important;border-radius:11px!important;background:#fff!important;box-shadow:inset 0 1px 2px rgba(15,23,42,.03)!important}input:focus,select:focus,textarea:focus{border-color:#38bdf8!important;outline:0!important;box-shadow:0 0 0 4px rgba(8,145,178,.10)!important}table{border:1px solid var(--line)!important;border-radius:16px!important;border-collapse:separate!important;border-spacing:0!important;overflow:hidden;background:#fff!important}thead th{background:#edf3f8!important;color:#27435d!important;border-bottom:1px solid var(--line)!important;text-transform:uppercase;font-size:.75rem!important;letter-spacing:.05em}tbody tr:hover{background:#f5faff!important}tbody td{border-bottom:1px solid #edf1f5!important}.status-approved{background:#e8f7f0!important;color:#047857!important}.status-pending{background:#fff6df!important;color:#a16207!important}.status-rejected{background:#fff0f0!important;color:#b91c1c!important}.status-audit{background:#f0edff!important;color:#5b21b6!important}.status-badge,.badge,.serial-tag{border-radius:999px!important;font-weight:750!important}.serial-tag{background:#e8f3fb!important;color:#075985!important}.cut-bill-row{background:#fff7f7!important;box-shadow:inset 4px 0 #ef4444!important}.cut-amount-text,.cut-text{color:#dc2626!important;font-weight:800!important}.btn-primary,.primary-btn{background:linear-gradient(135deg,#0f4c81,#0891b2)!important;color:#fff!important;border:0!important}.btn-success,.success-btn{background:linear-gradient(135deg,#047857,#10b981)!important;color:#fff!important;border:0!important}.btn-danger,.danger-btn{background:linear-gradient(135deg,#b91c1c,#ef4444)!important;color:#fff!important;border:0!important}.btn-warning,.warning-btn{background:linear-gradient(135deg,#a16207,#d97706)!important;color:#fff!important;border:0!important}.modal,.overlay{backdrop-filter:blur(8px)!important;background:rgba(15,23,42,.42)!important}.modal-content{border-radius:22px!important;box-shadow:0 24px 80px rgba(15,23,42,.2)!important}.section-title:after,.card-title:after{content:"";display:block;width:48px;height:3px;margin-top:7px;border-radius:8px;background:linear-gradient(90deg,#0891b2,#6d28d9)}@media(max-width:768px){.card,.panel,.section-card,.dashboard-card{border-radius:15px!important}} </style></head>
 <body onload="initAppSafe()">
 
   <!-- LOADING OVERLAY -->
@@ -254,30 +279,48 @@
           </div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-          <a href="#" onclick="openForgotModal()" style="font-size:0.85rem; color:var(--primary); text-decoration:none; font-weight:600;">Forgot Password? (Phone OTP)</a>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+          <a href="#" onclick="openForgotModal(); return false;" style="font-size:0.85rem; color:var(--primary); text-decoration:none; font-weight:600;">Forgot Password?</a>
         </div>
 
-        <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width:100%; padding:0.75rem;">Login</button>
+        <div style="display:flex; align-items:center; gap:0.55rem; margin-bottom:1.2rem;">
+          <input type="checkbox" id="keepSignedIn" style="width:19px; height:19px; margin:0; cursor:pointer; accent-color:var(--primary);">
+          <label for="keepSignedIn" style="margin:0; cursor:pointer; font-size:0.9rem; color:#475569;">
+            Keep me signed in
+          </label>
+        </div>
+
+        <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width:100%; padding:0.75rem;">Sign in →</button>
         <p style="text-align:center; margin-top:1.2rem; font-size:0.85rem; color:#64748b;">
           Don't have an account? <a href="#" onclick="toggleAuth('register')" style="color:var(--primary); font-weight:600; text-decoration:none;">Create New Account</a>
         </p>
-      </form>
+      
+        <div class="auth-support-block">
+          Need help? Email
+          <a href="mailto:ratinhossenemon@gamil.com">ratinhossenemon@gamil.com</a>
+          or call HR on
+          <a href="tel:01321752851">01321752851</a>.
+        </div>
+</form>
 
       <!-- REGISTER FORM -->
+            <!-- REGISTER FORM -->
       <form id="registerForm" class="hidden" onsubmit="handleRegisterStep1(event)">
         <div class="form-group">
           <label>Username (Single word without spaces)</label>
           <input type="text" id="regUser" required placeholder="e.g. Ratin12">
         </div>
+
         <div class="form-group">
           <label>Email Address</label>
           <input type="email" id="regEmail" required placeholder="name@domain.com">
         </div>
+
         <div class="form-group">
-          <label>Phone Number (Mandatory for OTP)</label>
+          <label>Phone Number</label>
           <input type="text" id="regPhone" required placeholder="017XXXXXXXX">
         </div>
+
         <div class="form-group">
           <label>Password</label>
           <div class="password-wrapper">
@@ -285,6 +328,7 @@
             <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
           </div>
         </div>
+
         <div class="form-group">
           <label>Account Role</label>
           <select id="regRole">
@@ -293,19 +337,31 @@
           </select>
         </div>
 
-        <div id="regOtpContainer" class="hidden" style="background:#f1f5f9; padding:1rem; border-radius:8px; margin-bottom:1rem; border:1px solid #cbd5e1;">
-          <div class="form-group" style="margin:0;">
-            <label style="color:var(--primary);">Enter 6-Digit OTP Code sent to Phone</label>
-            <input type="text" id="regOtpInput" placeholder="Enter OTP Code">
-          </div>
+        <button type="submit" id="regSubmitBtn" class="btn btn-success"
+          style="width:100%; padding:0.75rem;">
+          Create New Account →
+        </button>
+
+        <div id="registration-admin-note"
+          style="margin-top:10px; text-align:center; color:#64748b; font-size:0.82rem; line-height:1.45;">
+          After you submit, your account will be sent to Admin for permission.
+          You can log in after Admin approves and activates your account.
         </div>
 
-        <button type="button" id="regOtpSendBtn" class="btn btn-warning" style="width:100%; padding:0.75rem; margin-bottom:0.5rem;" onclick="sendRegOTP()">Send Real-time OTP</button>
-        <button type="submit" id="regSubmitBtn" class="btn btn-success hidden" style="width:100%; padding:0.75rem;">Verify OTP & Register</button>
-        
         <p style="text-align:center; margin-top:1.2rem; font-size:0.85rem; color:#64748b;">
-          Already registered? <a href="#" onclick="toggleAuth('login')" style="color:var(--primary); font-weight:600; text-decoration:none;">Login</a>
+          Already registered?
+          <a href="#" onclick="toggleAuth('login'); return false;"
+             style="color:var(--primary); font-weight:600; text-decoration:none;">
+            Sign in
+          </a>
         </p>
+
+        <div class="auth-support-block">
+          Need help? Email
+          <a href="mailto:ratinhossenemon@gamil.com">ratinhossenemon@gamil.com</a>
+          or call HR on
+          <a href="tel:01321752851">01321752851</a>.
+        </div>
       </form>
     </div>
 
@@ -475,6 +531,33 @@
             </div>
             <button type="submit" class="btn btn-success" style="height:42px;">Create Account</button>
           </form>
+        </div>
+
+        <!-- ADMIN PASSWORD RESET - NO SERVER REQUIRED -->
+        <div style="background:#fff7ed; padding:1.2rem; border-radius:10px; margin:1rem 0; border:1px solid #fed7aa;">
+          <h4 style="margin-bottom:0.5rem; color:#9a3412;">🔐 Admin Password Reset</h4>
+          <p style="font-size:0.85rem; color:#7c2d12; margin-bottom:0.8rem;">
+            Search a registered user by User ID or Phone Number and set a new password.
+            This works without any Password Reset server.
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0.5rem; align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label>User ID / Phone</label>
+              <input type="text" id="adminResetSearch" placeholder="User ID or 017XXXXXXXX">
+            </div>
+            <button type="button" class="btn btn-primary" style="height:42px;" onclick="findUserForAdminPasswordReset()">Find User</button>
+          </div>
+          <div id="adminResetUserBox" class="hidden" style="margin-top:0.8rem; padding:1rem; background:#fff; border:1px solid #fed7aa; border-radius:8px;">
+            <div style="margin-bottom:0.7rem;">
+              <strong>User:</strong> <span id="adminResetUsername"></span>
+              <span style="margin-left:0.5rem; color:#64748b;">(<span id="adminResetPhone"></span>)</span>
+            </div>
+            <div class="form-group" style="margin:0 0 0.7rem 0;">
+              <label>New Password</label>
+              <input type="password" id="adminResetNewPassword" minlength="4" placeholder="Minimum 4 characters">
+            </div>
+            <button type="button" class="btn btn-warning" onclick="adminResetUserPassword()">Set New Password</button>
+          </div>
         </div>
 
         <h4 style="margin-top:1.5rem;">Registered Users List</h4>
@@ -791,40 +874,59 @@
 
   <!-- FORGOT PASSWORD MODAL -->
   <div id="forgotModal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h3 style="margin-bottom:0.5rem; color:var(--secondary);">Phone OTP Password Recovery</h3>
-      <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.2rem;">Verify using your registered Phone Number.</p>
-      
-      <div id="otpStep1">
-        <div class="form-group">
-          <label>Registered Phone Number</label>
-          <input type="text" id="forgotPhone" placeholder="017XXXXXXXX" required>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button class="btn btn-secondary" onclick="closeForgotModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="sendPhoneOTP()">Send Real-time OTP</button>
-        </div>
-      </div>
-
-      <div id="otpStep2" class="hidden">
-        <div class="form-group">
-          <label>Enter 6-Digit Real-time OTP Code</label>
-          <input type="text" id="inputOTP" placeholder="e.g. 849201" required>
-        </div>
-        <div class="form-group">
-          <label>Enter New Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="forgotNewPass" placeholder="Enter new password" required>
-            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forgotNewPass', this)">👁️</button>
+    <div class="modal-box" style="max-width:440px; padding:34px 44px 28px; border-radius:18px;">
+      <div id="forgotEmailStep">
+        <h2 style="margin:0 0 10px; font-size:28px; line-height:1.2; color:#0f172a; font-weight:800;">Reset your password</h2>
+        <p style="margin:0 0 28px; color:#475569; font-size:16px; line-height:1.65;">Enter the email address on your employee account and we'll send you a link to set a new password.</p>
+        <form onsubmit="sendPasswordResetEmail(event)">
+          <div class="form-group" style="margin-bottom:18px;">
+            <label for="forgotEmail" style="font-size:14px; color:#0f172a;">Email address</label>
+            <input type="email" id="forgotEmail" required autocomplete="email" style="height:50px; padding:0 14px; border:2px solid #16a34a !important; border-radius:8px !important; font-size:16px;">
           </div>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button class="btn btn-secondary" onclick="closeForgotModal()">Cancel</button>
-          <button class="btn btn-success" onclick="verifyAndResetPassword()">Save New Password</button>
-        </div>
+          <button type="submit" id="forgotResetBtn" class="btn btn-success" style="width:100%; height:50px; border-radius:9px !important; font-size:16px; background:#008f4c !important;">
+            <span>Email reset link</span> <span style="font-size:19px; line-height:1;">➤</span>
+          </button>
+        </form>
+        <div style="text-align:center; margin-top:21px; font-size:14px; color:#64748b;">Remembered it? <a href="#" onclick="closeForgotModal(); return false;" style="color:#008f4c; font-weight:700; text-decoration:underline;">Back to sign in</a></div>
+        <div class="auth-support-block" style="margin-top:30px; padding-top:20px;">Need help? Email <a href="mailto:ratinhossainemon@gamil.com">ratinhossainemon@gamil.com</a> or call HR on <a href="tel:01321752851">01321752851</a>.</div>
+      </div>
+      <div id="forgotSentStep" class="hidden" style="text-align:center;">
+        <div style="width:58px;height:58px;margin:0 auto 16px;border-radius:50%;background:#e8f7f0;color:#008f4c;display:flex;align-items:center;justify-content:center;font-size:28px;">✓</div>
+        <h3 style="margin-bottom:8px; color:#0f172a;">Check your email</h3>
+        <p id="forgotSentMessage" style="font-size:14px; line-height:1.65; color:#64748b;">If the email belongs to a registered employee account, a password reset link has been sent.</p>
+        <button class="btn btn-secondary" style="margin-top:16px;" onclick="closeForgotModal()">Close</button>
       </div>
     </div>
   </div>
+
+  <!-- PASSWORD RESET PAGE -->
+  <section id="passwordResetPage" class="auth-container hidden" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1rem; border-top:0; margin:0 auto;">
+    <div class="card" style="width:100%; max-width:440px; margin:0; padding:34px 44px 28px; border-radius:18px !important;">
+      <div style="margin-bottom:28px;">
+        <h2 style="margin:0 0 10px; font-size:28px; line-height:1.2; color:#0f172a; font-weight:800;">Reset your password</h2>
+        <p style="margin:0; color:#475569; font-size:16px; line-height:1.65;">Create a new password for your RATIN.BD employee account.</p>
+      </div>
+      <div id="resetLinkChecking" style="text-align:center; padding:20px 0; color:#64748b;">Checking your secure reset link...</div>
+      <div id="resetFormContainer" class="hidden">
+        <div class="form-group">
+          <label>New password</label>
+          <div class="password-wrapper">
+            <input type="password" id="resetNewPassword" placeholder="Enter new password" autocomplete="new-password">
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('resetNewPassword', this)">👁️</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Confirm password</label>
+          <div class="password-wrapper">
+            <input type="password" id="resetAgainPassword" placeholder="Confirm new password" autocomplete="new-password">
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('resetAgainPassword', this)">👁️</button>
+          </div>
+        </div>
+        <button class="btn btn-success" id="saveResetPasswordBtn" style="width:100%; height:50px; padding:0.8rem; background:#008f4c !important;" onclick="saveResetPassword()">Save password</button>
+      </div>
+      <div id="resetResult" class="hidden" style="text-align:center; padding:18px 0;"></div>
+    </div>
+  </section>
 
   <!-- PROFILE MODAL -->
   <div id="profileModal" class="modal-overlay hidden">
@@ -905,6 +1007,30 @@
     let autoLogoutTimer = null;
     let currentPopupType = null;
     let isLocationLocked = false;
+
+    // Secure delivery endpoints. These must be implemented by your server/Firebase Cloud Functions.
+    // OTP codes are NEVER shown in alerts and are NEVER generated/verified only in the browser.
+    const OTP_API = {
+      request: '/api/otp/request',
+      verify: '/api/otp/verify',
+      activationEmail: '/api/account/activation-email',
+      passwordResetRequest: '/api/password-reset/request',
+      passwordResetComplete: '/api/password-reset/complete'
+    };
+
+    const SUPPORT_CONTACT = {
+      email: 'ratinhossenemon@gamil.com',
+      phone: '01321752851',
+      whatsapp: '01321752851'
+    };
+
+    let otpFlow = {
+      purpose: null,
+      channel: null,
+      target: null,
+      expiresAt: 0,
+      verified: false
+    };
 
     // BANGLADESH LOCATION DATA
     const bdData = {
@@ -1107,12 +1233,22 @@
     function startAutoLogoutTimer() {
       stopAutoLogoutTimer();
       const session = localStorage.getItem('ratin_session');
-      if (session) {
-        autoLogoutTimer = setTimeout(() => {
-          alert(`System inactivity limit (${globalSettings.autoLogoutMins} minutes) reached. Automatically logged out.`);
-          logout();
-        }, getAutoLogoutDuration());
-      }
+      if (!session || !document.hidden) return;
+
+      const hiddenSince = Number(sessionStorage.getItem('ratin_hidden_since') || Date.now());
+      sessionStorage.setItem('ratin_hidden_since', String(hiddenSince));
+      const remaining = Math.max(0, getAutoLogoutDuration() - (Date.now() - hiddenSince));
+
+      autoLogoutTimer = setTimeout(() => {
+        const latest = localStorage.getItem('ratin_session');
+        if (!latest) return;
+        if (document.hidden) {
+          alert(`You were away for ${globalSettings.autoLogoutMins} minutes. You have been logged out for security.`);
+          performSecurityLogout(true);
+        } else {
+          sessionStorage.removeItem('ratin_hidden_since');
+        }
+      }, remaining);
     }
 
     function stopAutoLogoutTimer() {
@@ -1123,14 +1259,41 @@
     }
 
     function resetAutoLogoutTimer() {
-      const session = localStorage.getItem('ratin_session');
-      if (session) {
-        startAutoLogoutTimer();
-      }
+      if (!localStorage.getItem('ratin_session')) return;
+      if (document.hidden) return;
+      sessionStorage.removeItem('ratin_hidden_since');
+      stopAutoLogoutTimer();
     }
 
-    ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+    ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll', 'click', 'input', 'change'].forEach(evt => {
       window.addEventListener(evt, resetAutoLogoutTimer, { passive: true });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!localStorage.getItem('ratin_session')) return;
+
+      if (document.hidden) {
+        sessionStorage.setItem('ratin_hidden_since', String(Date.now()));
+        startAutoLogoutTimer();
+      } else {
+        const hiddenSince = Number(sessionStorage.getItem('ratin_hidden_since') || 0);
+        sessionStorage.removeItem('ratin_hidden_since');
+        stopAutoLogoutTimer();
+
+        if (hiddenSince && Date.now() - hiddenSince >= getAutoLogoutDuration()) {
+          performSecurityLogout(true);
+          return;
+        }
+
+        // Returned before 5 minutes: keep the exact current page/form state.
+        checkSession();
+      }
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (localStorage.getItem('ratin_session')) {
+        sessionStorage.setItem('ratin_hidden_since', String(Date.now()));
+      }
     });
 
     document.addEventListener('visibilitychange', () => {
@@ -1183,8 +1346,14 @@
     function initAppSafe() {
       startupStartedAt = Date.now();
       startupFinished = false;
-      setPageLoader('Syncing Data...', true);
       try {
+        const resetToken = getResetTokenFromUrl();
+        if (resetToken) {
+          setPageLoader('Checking password reset link...', true);
+          initializePasswordResetPage().catch((err) => console.error('Password reset startup error:', err)).finally(() => hidePageLoader());
+          return;
+        }
+        setPageLoader('Syncing Data...', true);
         initApp();
       } catch (err) {
         console.error('Startup error:', err);
@@ -1355,9 +1524,9 @@
     }
 
     function openForgotModal() {
-      document.getElementById('otpStep1').classList.remove('hidden');
-      document.getElementById('otpStep2').classList.add('hidden');
-      document.getElementById('forgotPhone').value = '';
+      document.getElementById('forgotEmailStep').classList.remove('hidden');
+      document.getElementById('forgotSentStep').classList.add('hidden');
+      document.getElementById('forgotEmail').value = '';
       document.getElementById('forgotModal').classList.remove('hidden');
     }
 
@@ -1365,71 +1534,217 @@
       document.getElementById('forgotModal').classList.add('hidden');
     }
 
-    function sendPhoneOTP() {
-      const phone = document.getElementById('forgotPhone').value.trim();
-      const users = getUsersArray();
-      const user = users.find(u => u.phone && u.phone.trim() === phone);
-
-      if (!user) {
-        alert('No account registered with this phone number!');
-        return;
-      }
-
-      generatedForgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      otpTargetPhone = phone;
-
-      alert(`[RATIN.BD OTP Gateway]\n\nYour Real-time OTP Code: ${generatedForgotOTP}\n\nUse this code to verify your phone number and reset password.`);
-
-      document.getElementById('otpStep1').classList.add('hidden');
-      document.getElementById('otpStep2').classList.remove('hidden');
-    }
-
-    function verifyAndResetPassword() {
-      const inputCode = document.getElementById('inputOTP').value.trim();
-      const newPass = document.getElementById('forgotNewPass').value;
-
-      if (inputCode !== generatedForgotOTP) {
-        alert('Invalid OTP code provided!');
-        return;
-      }
-
-      if (!newPass || newPass.length < 4) {
-        alert('Please select a password with at least 4 characters!');
-        return;
-      }
-
-      const users = getUsersArray();
-      const user = users.find(u => u.phone && u.phone.trim() === otpTargetPhone);
-
-      if (user) {
-        user.password = newPass;
-        database.ref('users/' + user.username).set(user).then(() => {
-          alert('Password successfully updated! Log in with your new password.');
-          closeForgotModal();
-          toggleAuth('login');
+    async function sendPasswordResetEmail(event) {
+      if (event) event.preventDefault();
+      const emailInput = document.getElementById('forgotEmail');
+      const button = document.getElementById('forgotResetBtn');
+      const email = (emailInput?.value || '').trim().toLowerCase();
+      if (!email) { alert('Please enter your email address.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email address.'); return; }
+      const originalHtml = button ? button.innerHTML : '';
+      if (button) { button.disabled = true; button.innerHTML = 'Sending reset link...'; button.style.opacity = '0.75'; }
+      try {
+        const response = await fetch(OTP_API.passwordResetRequest, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            email,
+            websiteUrl: window.location.origin + window.location.pathname,
+            supportEmail: SUPPORT_CONTACT.email,
+            supportPhone: SUPPORT_CONTACT.phone,
+            supportWhatsapp: SUPPORT_CONTACT.whatsapp,
+            subject: 'RATIN.BD Password Reset'
+          })
         });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.success === false) throw new Error(data.message || 'The password reset email could not be sent.');
+        document.getElementById('forgotEmailStep')?.classList.add('hidden');
+        document.getElementById('forgotSentStep')?.classList.remove('hidden');
+        const msg = document.getElementById('forgotSentMessage');
+        if (msg) msg.textContent = data.message || 'If the email belongs to a registered employee account, a password reset link has been sent. Please check your inbox and spam folder.';
+      } catch (err) {
+        console.error('Password reset email error:', err);
+        alert(err.message || 'Password reset email could not be sent. Please try again.');
+      } finally {
+        if (button) { button.disabled = false; button.innerHTML = originalHtml; button.style.opacity = '1'; }
       }
     }
 
-    function sendRegOTP() {
+    function getResetTokenFromUrl() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('resetToken') || params.get('token') || '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+    async function initializePasswordResetPage() {
+      const token = getResetTokenFromUrl();
+      const page = document.getElementById('passwordResetPage');
+      const checking = document.getElementById('resetLinkChecking');
+      const form = document.getElementById('resetFormContainer');
+      const result = document.getElementById('resetResult');
+
+      if (!page) return false;
+
+      // Normal site URL: do not show reset page.
+      if (!token) {
+        page.classList.add('hidden');
+        return false;
+      }
+
+      document.getElementById('authSection')?.classList.add('hidden');
+      document.getElementById('appDashboard')?.classList.add('hidden');
+      document.getElementById('navRight')?.classList.add('hidden');
+      page.classList.remove('hidden');
+
+      try {
+        const response = await fetch(`${OTP_API.passwordResetRequest}?action=validate&token=${encodeURIComponent(token)}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.success) {
+          checking.classList.add('hidden');
+          result.classList.remove('hidden');
+          result.innerHTML = `
+            <div style="color:#b91c1c; font-weight:700;">Reset Link Expired or Already Used</div>
+            <div style="margin-top:7px; font-size:0.85rem; color:#64748b;">
+              This reset link is valid for only 2 minutes and can be used only once.
+              Please go to Forgot Password and request a new email.
+            </div>`;
+          return true;
+        }
+
+        checking.classList.add('hidden');
+        form.classList.remove('hidden');
+        return true;
+      } catch (err) {
+        console.error(err);
+        checking.classList.add('hidden');
+        result.classList.remove('hidden');
+        result.innerHTML = `
+          <div style="color:#b91c1c; font-weight:700;">Unable to verify reset link</div>
+          <div style="margin-top:7px; font-size:0.85rem; color:#64748b;">
+            Please try again or request a new password reset email.
+          </div>`;
+        return true;
+      }
+    }
+
+    async function saveResetPassword() {
+      const token = getResetTokenFromUrl();
+      const newPassword = document.getElementById('resetNewPassword').value;
+      const againPassword = document.getElementById('resetAgainPassword').value;
+      const form = document.getElementById('resetFormContainer');
+      const result = document.getElementById('resetResult');
+
+      if (!token) {
+        alert('Invalid password reset link.');
+        return;
+      }
+
+      if (!newPassword || newPassword.length < 4) {
+        alert('Please enter a password with at least 4 characters.');
+        return;
+      }
+
+      if (newPassword !== againPassword) {
+        alert('New Password and Again Password do not match.');
+        return;
+      }
+
+      try {
+        const response = await fetch(OTP_API.passwordResetComplete, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            token,
+            newPassword
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.success) {
+          result.classList.remove('hidden');
+          result.innerHTML = `
+            <div style="color:#b91c1c; font-weight:700;">
+              ${data.message || 'Reset link expired or has already been used.'}
+            </div>`;
+          form.classList.add('hidden');
+          return;
+        }
+
+        form.classList.add('hidden');
+        result.classList.remove('hidden');
+        result.innerHTML = `
+          <div style="color:#15803d; font-size:1.05rem; font-weight:700;">
+            Password Change Successful
+          </div>
+          <div style="margin-top:7px; font-size:0.85rem; color:#64748b;">
+            Your password has been changed successfully. You can now log in with your new password.
+          </div>
+          <button class="btn btn-primary" style="margin-top:1rem;" onclick="returnToLoginAfterReset()">
+            Go to Login
+          </button>`;
+
+        // Immediately remove the token from the browser address bar.
+        try {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) {}
+      } catch (err) {
+        console.error(err);
+        alert('Password could not be changed. Please try again.');
+      }
+    }
+
+    function returnToLoginAfterReset() {
+      document.getElementById('passwordResetPage')?.classList.add('hidden');
+      document.getElementById('authSection')?.classList.remove('hidden');
+      toggleAuth('login');
+    }
+
+    async function sendRegOTP() {
       const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const channel = document.getElementById('regOtpChannel').value;
+
       if (!phone || phone.length < 10) {
-        alert('Please enter a valid Phone Number for OTP verification!');
+        alert('Please enter a valid Phone Number!');
+        return;
+      }
+      if (!email) {
+        alert('Please enter a valid Gmail / Email address!');
         return;
       }
 
       const users = getUsersArray();
+      if (users.some(u => u.email && u.email.trim().toLowerCase() === email)) {
+        alert('This email address is already registered!');
+        return;
+      }
       if (users.some(u => u.phone && u.phone.trim() === phone)) {
         alert('This phone number is already registered!');
         return;
       }
 
-      generatedRegOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      alert(`[RATIN.BD Real-time Registration OTP]\n\nYour OTP Code is: ${generatedRegOTP}`);
-
-      document.getElementById('regOtpContainer').classList.remove('hidden');
-      document.getElementById('regOtpSendBtn').classList.add('hidden');
-      document.getElementById('regSubmitBtn').classList.remove('hidden');
+      const target = channel === 'email' ? email : phone;
+      try {
+        await requestServerOTP('registration', channel, target, { email, phone });
+        document.getElementById('regOtpContainer').classList.remove('hidden');
+        document.getElementById('regOtpSendBtn').classList.add('hidden');
+        document.getElementById('regSubmitBtn').classList.remove('hidden');
+        alert(`OTP sent successfully by ${channel === 'email' ? 'email' : 'SMS'}. It will expire in 1 minute.`);
+      } catch (err) {
+        console.error(err);
+        alert('OTP could not be sent. Please check the OTP service configuration.');
+      }
     }
 
     function toggleAuth(mode) {
@@ -1446,11 +1761,24 @@
 
     function handleLogin(e) {
       e.preventDefault();
+
+      const keepSignedIn = document.getElementById('keepSignedIn');
+      if (!keepSignedIn || !keepSignedIn.checked) {
+        alert('Please check “Keep me signed in” before signing in.');
+        keepSignedIn?.focus();
+        return;
+      }
+
       const input = document.getElementById('loginUser').value.trim().toLowerCase();
       const pass = document.getElementById('loginPass').value;
       const users = getUsersArray();
 
-      const user = users.find(u => (u.username.toLowerCase() === input || u.email.toLowerCase() === input || (u.phone && u.phone.trim() === input)) && u.password === pass);
+      const user = users.find(u =>
+        ((u.username || '').toLowerCase() === input ||
+         (u.email || '').toLowerCase() === input ||
+         (u.phone && u.phone.trim() === input)) &&
+        u.password === pass
+      );
 
       if (!user) {
         alert('Invalid username, email, phone number or password!');
@@ -1468,50 +1796,74 @@
       }
 
       localStorage.setItem('ratin_session', JSON.stringify(user));
+      localStorage.removeItem('ratin_ui_state');
+      sessionStorage.setItem('ratin_fresh_login', '1');
       checkSession();
     }
 
-    function handleRegisterStep1(e) {
+    async function handleRegisterStep1(e) {
       e.preventDefault();
+
       const username = document.getElementById('regUser').value.trim().replace(/\s+/g, '');
-      const email = document.getElementById('regEmail').value.trim();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
       const phone = document.getElementById('regPhone').value.trim();
       const password = document.getElementById('regPass').value;
       const role = document.getElementById('regRole').value;
-      const inputOtp = document.getElementById('regOtpInput').value.trim();
 
       if (!username || !email || !phone || !password) {
         alert('All fields are required!');
         return;
       }
 
-      if (inputOtp !== generatedRegOTP) {
-        alert('Invalid OTP code! Please enter the correct OTP code sent to your phone.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address.');
         return;
       }
 
       const users = getUsersArray();
-      if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+
+      if (users.some(u => (u.username || '').toLowerCase() === username.toLowerCase())) {
         alert('An account already exists with this username!');
         return;
       }
 
-      const newUser = { 
-        username, 
-        email, 
+      if (users.some(u => (u.email || '').trim().toLowerCase() === email)) {
+        alert('This email address is already registered!');
+        return;
+      }
+
+      if (users.some(u => u.phone && u.phone.trim() === phone)) {
+        alert('This phone number is already registered!');
+        return;
+      }
+
+      const newUser = {
+        username,
+        email,
         phone,
-        password, 
-        role, 
+        password,
+        role,
         designation: role === 'manager' ? 'Manager' : 'User',
         photo: '',
-        status: 'Pending', 
-        activeState: 'Active' 
+        status: 'Pending',
+        activeState: 'Active'
       };
 
-      database.ref('users/' + username).set(newUser).then(() => {
-        alert('Registration successfully verified via OTP!\nYou can log in after admin approval.');
+      try {
+        await database.ref('users/' + username).set(newUser);
+
+        alert(
+          'Account request submitted successfully!\\n\\n' +
+          'Your account has been sent to Admin for permission.\\n' +
+          'You can log in after Admin approves and activates your account.'
+        );
+
+        document.getElementById('registerForm').reset();
         toggleAuth('login');
-      });
+      } catch (err) {
+        console.error(err);
+        alert('Account request could not be submitted. Please try again.');
+      }
     }
 
     function saveUiState() {
@@ -1547,6 +1899,30 @@
     }
 
     window.addEventListener('beforeunload', saveUiState);
+    window.addEventListener('pageshow', () => {
+      const session = localStorage.getItem('ratin_session');
+
+      if (!session) {
+        document.getElementById('authSection')?.classList.remove('hidden');
+        document.getElementById('appDashboard')?.classList.add('hidden');
+        document.getElementById('navRight')?.classList.add('hidden');
+        return;
+      }
+
+      // On refresh, Firebase may not have loaded the live users snapshot yet.
+      // Do not validate/remove the stored session until initial data is ready.
+      // finishStartup() calls checkSession() after Firebase users are loaded.
+      if (isDataLoaded) {
+        checkSession();
+      }
+    });
+
+    // Never allow a protected dashboard snapshot to remain visible after logout.
+    window.addEventListener('popstate', () => {
+      if (!localStorage.getItem('ratin_session')) {
+        checkSession();
+      }
+    });
 
     function checkSession() {
       let savedSession = null;
@@ -1559,6 +1935,10 @@
       // A session is valid only when the same user exists in LIVE Firebase data.
       // Never trust a locally stored role/status/password.
       if (savedSession && savedSession.username) {
+        // Never invalidate a stored session while the initial Firebase data
+        // is still loading. finishStartup() performs the real validation.
+        if (!isDataLoaded) return;
+
         const users = getUsersArray();
         const activeUser = users.find(u =>
           u && typeof u.username === 'string' &&
@@ -1634,7 +2014,11 @@
           }
 
           renderDashboard();
-          restoreUiState();
+          if (sessionStorage.getItem('ratin_fresh_login') !== '1') {
+            restoreUiState();
+          } else {
+            sessionStorage.removeItem('ratin_fresh_login');
+          }
           startAutoLogoutTimer();
           return;
         }
@@ -1649,10 +2033,30 @@
       document.getElementById('navRight').classList.add('hidden');
     }
 
-    function logout() {
+    function performSecurityLogout(isAutomatic = false) {
       stopAutoLogoutTimer();
       localStorage.removeItem('ratin_session');
+      localStorage.removeItem('ratin_ui_state');
+      sessionStorage.removeItem('ratin_hidden_since');
+
+      // New login must start from the beginning, never restore the old page/state.
+      currentManagerFilter = 'ALL_BILLS';
+      selectedUserDateFilter = null;
+      tempLineItems = [];
+      editingLineId = null;
+      editingBillId = null;
+
+      document.getElementById('loginForm')?.reset();
+      document.getElementById('registerForm')?.reset();
+
+      if (isAutomatic) {
+        alert('For security, your session has expired after 5 minutes away from this website. Please log in again.');
+      }
       checkSession();
+    }
+
+    function logout() {
+      performSecurityLogout(false);
     }
 
     function previewProfileImage(event) {
@@ -1820,6 +2224,32 @@
       });
     }
 
+    async function sendActivationEmail(user) {
+      if (!user || !user.email) return;
+      try {
+        const response = await fetch(OTP_API.activationEmail, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: user.username,
+            email: user.email,
+            phone: user.phone || '',
+            role: user.role || 'user',
+            websiteUrl: window.location.origin + window.location.pathname,
+            supportEmail: SUPPORT_CONTACT.email,
+            supportPhone: SUPPORT_CONTACT.phone,
+            supportWhatsapp: SUPPORT_CONTACT.whatsapp,
+            subject: 'Your RATIN.BD Account Has Been Activated'
+          })
+        });
+        if (!response.ok) throw new Error('Activation email service unavailable');
+      } catch (err) {
+        console.error('Activation email error:', err);
+        alert('Account was activated, but the activation email could not be sent. Please check the email service configuration.');
+      }
+    }
+
     function adminCreateUser(e) {
       e.preventDefault();
       const username = document.getElementById('admNewUser').value.trim().replace(/\s+/g, '');
@@ -1845,12 +2275,82 @@
         activeState: 'Active' 
       };
 
-      database.ref('users/' + username).set(newUser).then(() => {
+      database.ref('users/' + username).set(newUser).then(async () => {
         document.getElementById('admNewUser').value = '';
         document.getElementById('admNewEmail').value = '';
         document.getElementById('admNewPhone').value = '';
         document.getElementById('admNewPass').value = '';
+        await sendActivationEmail(newUser);
         alert(`New ${role} account created successfully!`);
+      });
+    }
+
+    let adminResetTargetUsername = null;
+
+    function findUserForAdminPasswordReset() {
+      const query = (document.getElementById('adminResetSearch')?.value || '').trim().toLowerCase();
+      const box = document.getElementById('adminResetUserBox');
+      if (!query) {
+        alert('Please enter a User ID or Phone Number.');
+        return;
+      }
+
+      const user = getUsersArray().find(u =>
+        u && u.username && (
+          u.username.toLowerCase() === query ||
+          String(u.phone || '').trim().toLowerCase() === query
+        )
+      );
+
+      if (!user) {
+        adminResetTargetUsername = null;
+        box?.classList.add('hidden');
+        alert('No user found with this User ID or Phone Number.');
+        return;
+      }
+
+      if (user.username === 'admin') {
+        adminResetTargetUsername = null;
+        box?.classList.add('hidden');
+        alert('The main admin account cannot be reset from this section.');
+        return;
+      }
+
+      adminResetTargetUsername = user.username;
+      document.getElementById('adminResetUsername').innerText = user.username;
+      document.getElementById('adminResetPhone').innerText = user.phone || 'No phone';
+      document.getElementById('adminResetNewPassword').value = '';
+      box?.classList.remove('hidden');
+    }
+
+    function adminResetUserPassword() {
+      if (!adminResetTargetUsername) {
+        alert('Please find a user first.');
+        return;
+      }
+
+      const newPassword = document.getElementById('adminResetNewPassword').value;
+      if (!newPassword || newPassword.length < 4) {
+        alert('New password must contain at least 4 characters.');
+        return;
+      }
+
+      const user = getUsersArray().find(u => u.username === adminResetTargetUsername);
+      if (!user) {
+        alert('User no longer exists. Please search again.');
+        return;
+      }
+
+      user.password = newPassword;
+      database.ref('users/' + adminResetTargetUsername).set(user).then(() => {
+        alert(`Password for '${adminResetTargetUsername}' has been reset successfully.`);
+        document.getElementById('adminResetSearch').value = '';
+        document.getElementById('adminResetNewPassword').value = '';
+        document.getElementById('adminResetUserBox').classList.add('hidden');
+        adminResetTargetUsername = null;
+      }).catch(err => {
+        console.error(err);
+        alert('Password reset failed. Please try again.');
       });
     }
 
@@ -1932,12 +2432,22 @@
     }
 
     function approveUser(username) {
-      database.ref('users/' + username + '/status').set('Approved');
+      const user = getUsersArray().find(u => u.username === username);
+      database.ref('users/' + username + '/status').set('Approved').then(async () => {
+        if (user) await sendActivationEmail({ ...user, status: 'Approved', activeState: user.activeState || 'Active' });
+        alert(`User '${username}' approved. Activation email sent/requested.`);
+      });
     }
 
     function toggleActiveStatus(username, currentState) {
       const newState = currentState === 'Inactive' ? 'Active' : 'Inactive';
-      database.ref('users/' + username + '/activeState').set(newState);
+      const user = getUsersArray().find(u => u.username === username);
+      database.ref('users/' + username + '/activeState').set(newState).then(async () => {
+        if (newState === 'Active' && user) {
+          await sendActivationEmail({ ...user, activeState: 'Active', status: user.status || 'Approved' });
+          alert(`User '${username}' activated. Activation email sent/requested.`);
+        }
+      });
     }
 
     function deleteUserByAdmin(username) {
